@@ -4,6 +4,7 @@
 
 #include "DJAudioPlayer.h"
 #include "DeckGUI.h"
+#include "Playlist.h"
 
 //==============================================================================
 /*
@@ -35,6 +36,8 @@ private:
     
     DJAudioPlayer player2;
     DeckGUI deck2 {&player2, formatManager, thumbnailCache};
+    
+    Playlist playlistComponent;
     
     juce::MixerAudioSource mixer;
     
