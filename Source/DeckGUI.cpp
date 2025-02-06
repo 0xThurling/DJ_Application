@@ -17,6 +17,12 @@ DeckGUI::DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager
 {
     // In your constructor, you should add any child components, and
     // initialise any special settings that your component needs.
+    juce::File appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
+    
+    juce::File imageFile = appDir.getChildFile("Resources/deck.png");
+    deckImage = juce::ImageCache::getFromFile(imageFile);
+    
+    
     volumeSlider.setRange(0, 1);
     positionSlider.setRange(0, 1);
     speedSlider.setRange(0, 1);
@@ -40,7 +46,7 @@ DeckGUI::DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager
     positionSlider.addListener(this);
     speedSlider.addListener(this);
     
-    startTimer(500);
+    startTimer(60);
 }
 
 DeckGUI::~DeckGUI()
@@ -50,6 +56,33 @@ DeckGUI::~DeckGUI()
 void DeckGUI::paint (juce::Graphics& g)
 {
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));   // clear the background
+    
+    if (deckImage.isValid()) {
+        auto bounds = getLocalBounds().toFloat();
+        auto imageBounds = deckImage.getBounds().toFloat();
+
+        // Calculate individual scale factors.
+        float scaleX = bounds.getWidth() / imageBounds.getWidth();
+        float scaleY = bounds.getHeight() / imageBounds.getHeight();
+
+        // Use the minimum scale factor to preserve the aspect ratio.
+        float uniformScale = std::min(scaleX, scaleY);
+
+        // Optionally, translate the image such that it is centered.
+        auto imageCentre = imageBounds.getCentre();
+        auto boundsCentre = bounds.getCentre();
+
+        // Create a transform: first translate the image so its centre is at the origin,
+        // then apply the uniform scaling and rotation,
+        // and finally translate it to the component's centre.
+        auto transform = juce::AffineTransform::translation(-imageCentre.x, -imageCentre.y)
+                             .scaled(uniformScale)
+                             .rotated(rotationAngle)
+                             .translated(boundsCentre.x, boundsCentre.y);
+
+        // Draw the transformed image.
+        g.drawImageTransformed(deckImage, transform);
+    }
 }
 
 void DeckGUI::resized()
@@ -59,11 +92,7 @@ void DeckGUI::resized()
     float rowH = getHeight()/8;
     playButton.setBounds(0, 0, getWidth(), rowH);
     stopButton.setBounds(0, rowH, getWidth(), rowH);
-    volumeSlider.setBounds(0, rowH * 2, getWidth(), rowH);
-    positionSlider.setBounds(0, rowH * 3, getWidth(), rowH);
-    speedSlider.setBounds(0, rowH * 4, getWidth(), rowH);
-    waveformDisplay.setBounds(0, rowH * 5, getWidth(), rowH);
-    loadButton.setBounds(0, rowH * 7, getWidth(), rowH);
+    waveformDisplay.setBounds(0, rowH * 7, getWidth(), rowH);
 }
 
 void DeckGUI::buttonClicked(juce::Button* button) {

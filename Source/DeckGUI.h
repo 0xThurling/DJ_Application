@@ -34,6 +34,7 @@ public:
     
     void timerCallback() override; 
 private:
+    float rotationAngle = 0.0f;
     DJAudioPlayer* djAudioPlayer;
     
     juce::TextButton playButton;
@@ -43,6 +44,8 @@ private:
     juce::Slider volumeSlider;
     juce::Slider positionSlider;
     juce::Slider speedSlider;
+    
+    juce::Image deckImage;
     
     juce::FileChooser fChooser {"Select a file..."};
     

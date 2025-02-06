@@ -5,6 +5,7 @@
 #include "DJAudioPlayer.h"
 #include "DeckGUI.h"
 #include "Playlist.h"
+#include "MixerView.h"
 
 //==============================================================================
 /*
@@ -36,6 +37,8 @@ private:
     
     DJAudioPlayer player2;
     DeckGUI deck2 {&player2, formatManager, thumbnailCache};
+    
+    MixerView mixerView;
     
     Playlist playlistComponent;
     
