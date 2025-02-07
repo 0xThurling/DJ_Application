@@ -46,7 +46,7 @@ DeckGUI::DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager
     positionSlider.addListener(this);
     speedSlider.addListener(this);
     
-    startTimer(60);
+    startTimer(30);
 }
 
 DeckGUI::~DeckGUI()
@@ -100,11 +100,13 @@ void DeckGUI::buttonClicked(juce::Button* button) {
         DBG("DeckGUI::buttonClicked: You clicked the play button");
         djAudioPlayer->setPosition(0);
         djAudioPlayer->start();
+        play = true;
     }
     
     if (button == &stopButton) {
         DBG("DeckGUI::buttonClicked: You clicked the stop button");
         djAudioPlayer->stop();
+        play = false;
     }
     
     if (button == &loadButton) {
@@ -143,6 +145,7 @@ void DeckGUI::filesDropped(const juce::StringArray& files, int x, int y) {
         juce::URL fileUrl = juce::URL{juce::File{file}};
         
         djAudioPlayer->loadURL(fileUrl);
+        waveformDisplay.loadUrl(fileUrl);
         return;
     }
 }
@@ -151,4 +154,14 @@ void DeckGUI::timerCallback()
 {
     //std::cout << "DeckGUI::timerCallback" << std::endl;
     waveformDisplay.setPositionRelative(djAudioPlayer->getPositionRelative());
+    
+    if (play) {
+        rotationAngle += 0.02f;
+        
+        if (rotationAngle >= juce::MathConstants<float>::twoPi) {
+            rotationAngle -= juce::MathConstants<float>::twoPi;
+        }
+        
+        repaint();
+    }
 }

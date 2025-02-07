@@ -11,20 +11,28 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "DJAudioPlayer.h"
 
 //==============================================================================
 /*
 */
-class MixerView  : public juce::Component
+class MixerView  : public juce::Component, public juce::Slider::Listener
 {
 public:
-    MixerView();
+    MixerView(DJAudioPlayer* _player1, DJAudioPlayer* _player2);
     ~MixerView() override;
 
     void paint (juce::Graphics&) override;
     void resized() override;
+    
+    void sliderValueChanged(juce::Slider* slider) override;
 private:
+    DJAudioPlayer* djAudioPlayer1;
+    DJAudioPlayer* djAudioPlayer2;
+    
     juce::Slider mixerSlider;
+    juce::Label mixerLabel;
+    
     juce::Slider volumeSliderA;
     juce::Slider volumeSliderB;
     

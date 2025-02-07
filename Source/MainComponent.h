@@ -38,7 +38,7 @@ private:
     DJAudioPlayer player2;
     DeckGUI deck2 {&player2, formatManager, thumbnailCache};
     
-    MixerView mixerView;
+    MixerView mixerView{&player1, &player2};
     
     Playlist playlistComponent;
     

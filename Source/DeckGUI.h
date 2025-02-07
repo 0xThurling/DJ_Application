@@ -51,5 +51,7 @@ private:
     
     WaveformDisplay waveformDisplay;
     
+    bool play = false;
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DeckGUI)
 };

@@ -12,7 +12,7 @@
 #include "MixerView.h"
 
 //==============================================================================
-MixerView::MixerView()
+MixerView::MixerView(DJAudioPlayer* _player1, DJAudioPlayer* _player2) : djAudioPlayer1(_player1), djAudioPlayer2(_player2)
 {
     // In your constructor, you should add any child components, and
     // initialise any special settings that your component needs.
@@ -44,7 +44,12 @@ MixerView::MixerView()
     volumeSliderA.setRange(0, 1);
     volumeSliderB.setRange(0, 1);
     
+    mixerLabel.setText("Cross-Fade", juce::dontSendNotification);
+    mixerLabel.attachToComponent(&mixerSlider, false);
+    
     addAndMakeVisible(mixerSlider);
+    addAndMakeVisible(mixerLabel);
+    
     addAndMakeVisible(volumeSliderA);
     addAndMakeVisible(volumeSliderB);
     
@@ -59,6 +64,10 @@ MixerView::MixerView()
     mixerSlider.setValue(0.5f);
     volumeSliderA.setValue(0.5f);
     volumeSliderB.setValue(0.5f);
+    
+    volumeSliderA.addListener(this);
+    volumeSliderB.addListener(this);
+    mixerSlider.addListener(this);
 }
 
 MixerView::~MixerView()
@@ -88,6 +97,7 @@ void MixerView::resized()
     float width = getWidth()/4;
     
     mixerSlider.setBounds(width, rowH * 7, width * 2, rowH);
+    mixerLabel.setBounds(mixerSlider.getX() + 15, mixerSlider.getBottom() - 60, mixerSlider.getWidth(), 10);
     
     volumeSliderA.setBounds(0, rowH * 1, getWidth()/4, rowH * 5);
     volumeSliderB.setBounds((getWidth()/4) * 3, rowH * 1, getWidth()/4, rowH * 5);
@@ -99,4 +109,21 @@ void MixerView::resized()
     trackBHighPassSlider.setBounds((getWidth()/4) * 2, rowH * 1, (getWidth()/4), rowH);
     trackBMidPassSlider.setBounds((getWidth()/4) * 2, rowH * 2, (getWidth()/4), rowH);
     trackBLowPassSlider.setBounds((getWidth()/4) * 2, rowH * 3, (getWidth()/4), rowH);
+}
+
+void MixerView::sliderValueChanged(juce::Slider* slider) {
+    if (slider == &volumeSliderA) {
+        DBG("DeckGUI::sliderValueChanged : Gain slider value changed: " << volumeSliderA.getValue());
+        djAudioPlayer1->setGain(slider->getValue());
+    }
+    
+    if (slider == &volumeSliderB) {
+        DBG("DeckGUI::sliderValueChanged : Gain slider value changed: " << volumeSliderB.getValue());
+        djAudioPlayer2->setGain(slider->getValue());
+    }
+    
+    if (slider == &mixerSlider) {
+        djAudioPlayer1->setGain(1.0f - slider->getValue());
+        djAudioPlayer2->setGain(slider->getValue());
+    }
 }
