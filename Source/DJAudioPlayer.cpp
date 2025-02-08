@@ -24,12 +24,40 @@ void DJAudioPlayer::prepareToPlay (int samplesPerBlockExpected, double sampleRat
     formatManager.registerBasicFormats();
     transportSource.prepareToPlay(samplesPerBlockExpected, sampleRate);
     resampleSource.prepareToPlay(samplesPerBlockExpected, sampleRate);
+    
+    // HighPassfilter setup
+    highpassFilter.reset();
+    auto hpCoeffs = juce::dsp::IIR::Coefficients<float>::makeHighPass(sampleRate, hpCutoff, hpQualityFactor);
+    *highpassFilter.coefficients = *hpCoeffs;
+    
+    // Lowpass filter setup
+    lowpassFilter.reset();
+    auto lpCoeffs = juce::dsp::IIR::Coefficients<float>::makeLowPass(sampleRate, lpCutoff, lpQualityFactor);
+    *lowpassFilter.coefficients = *lpCoeffs;
+    
+    // Store sample rate for later processing needed
+    djSampleRate = sampleRate;
 }
+
 void DJAudioPlayer::getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill)
 {
+    // First get the next Audio Block to process
     resampleSource.getNextAudioBlock(bufferToFill);
-
+    
+    // Wrap the buffer in a dsp::AudioBlock to use the DSP module
+    auto block = juce::dsp::AudioBlock<float>(*bufferToFill.buffer).getSubBlock(bufferToFill.startSample, bufferToFill.numSamples);
+    // Create a processing context that tells the filter to process in-place
+    juce::dsp::ProcessContextReplacing<float> context(block);
+    
+    // ================ HIGHPASS ===================
+    highpassFilter.process(context);
+    // =============================================
+    
+    // ================ LOWPASS ====================
+    lowpassFilter.process(context);
+    // =============================================
 }
+
 void DJAudioPlayer::releaseResources()
 {
     transportSource.releaseResources();
@@ -99,4 +127,26 @@ void DJAudioPlayer::stop()
 double DJAudioPlayer::getPositionRelative()
 {
     return transportSource.getCurrentPosition() / transportSource.getLengthInSeconds();
+}
+
+void DJAudioPlayer::setHighPassFilterAmount(double amount) {
+    hpCutoff = 2000 * amount;
+    
+    if (djSampleRate > 0) {
+        auto coeffs = juce::dsp::IIR::Coefficients<float>::makeHighPass(djSampleRate, hpCutoff, hpQualityFactor);
+        *highpassFilter.coefficients = *coeffs;
+    }
+    
+    std::cout << hpCutoff << " " << amount << std::endl;
+}
+
+void DJAudioPlayer::setLowPassFilterAmount(double amount) {
+    lpCutoff = 20000.0f * amount;
+    
+    if (djSampleRate > 0) {
+        auto lpCoeffs = juce::dsp::IIR::Coefficients<float>::makeLowPass(djSampleRate, lpCutoff, lpQualityFactor);
+        *lowpassFilter.coefficients = *lpCoeffs;
+    }
+    
+    std::cout << lpCutoff << " " << amount << " " << djSampleRate * 0.5 << std::endl;
 }

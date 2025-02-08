@@ -19,6 +19,15 @@ class DJAudioPlayer : public juce::AudioSource {
     juce::AudioTransportSource transportSource;
     juce::ResamplingAudioSource resampleSource{&transportSource, false, 2};
     
+    double hpCutoff = 100.0f;
+    double hpQualityFactor = 0.7071f;
+    juce::dsp::IIR::Filter<float> highpassFilter;
+    
+    double lpCutoff = 20000.0f;
+    double lpQualityFactor = 0.7071f;
+    juce::dsp::IIR::Filter<float> lowpassFilter;
+    
+    double djSampleRate;
     public:
     DJAudioPlayer();
     ~DJAudioPlayer();
@@ -32,7 +41,8 @@ class DJAudioPlayer : public juce::AudioSource {
     void setSpeed(double ratio);
     void setPosition(double posInSecs);
     void setPositionRelative(double pos);
-    
+    void setHighPassFilterAmount(double amount);
+    void setLowPassFilterAmount(double amount);
 
     void start();
     void stop();

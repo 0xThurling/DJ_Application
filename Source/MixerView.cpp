@@ -44,6 +44,9 @@ MixerView::MixerView(DJAudioPlayer* _player1, DJAudioPlayer* _player2) : djAudio
     volumeSliderA.setRange(0, 1);
     volumeSliderB.setRange(0, 1);
     
+    trackAHighPassSlider.setRange(0.1, 1);
+    trackALowPassSlider.setRange(0.1, 0.99);
+    
     mixerLabel.setText("Cross-Fade", juce::dontSendNotification);
     mixerLabel.attachToComponent(&mixerSlider, false);
     
@@ -68,6 +71,9 @@ MixerView::MixerView(DJAudioPlayer* _player1, DJAudioPlayer* _player2) : djAudio
     volumeSliderA.addListener(this);
     volumeSliderB.addListener(this);
     mixerSlider.addListener(this);
+    
+    trackAHighPassSlider.addListener(this);
+    trackALowPassSlider.addListener(this);
 }
 
 MixerView::~MixerView()
@@ -125,5 +131,13 @@ void MixerView::sliderValueChanged(juce::Slider* slider) {
     if (slider == &mixerSlider) {
         djAudioPlayer1->setGain(1.0f - slider->getValue());
         djAudioPlayer2->setGain(slider->getValue());
+    }
+    
+    if (slider == &trackAHighPassSlider) {
+        djAudioPlayer1->setHighPassFilterAmount(slider->getValue());
+    }
+    
+    if (slider == &trackALowPassSlider) {
+        djAudioPlayer1->setLowPassFilterAmount(1.0f - slider->getValue());
     }
 }
