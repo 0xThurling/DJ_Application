@@ -27,6 +27,11 @@ class DJAudioPlayer : public juce::AudioSource {
     double lpQualityFactor = 0.7071f;
     juce::dsp::IIR::Filter<float> lowpassFilter;
     
+    double midCutoff = 500.0f;
+    double midQualityFactor = 0.7071f;
+    double midBandPassMix = 0.0;
+    juce::dsp::IIR::Filter<float> midBandPassFilter;
+    
     double djSampleRate;
     public:
     DJAudioPlayer();
@@ -43,6 +48,7 @@ class DJAudioPlayer : public juce::AudioSource {
     void setPositionRelative(double pos);
     void setHighPassFilterAmount(double amount);
     void setLowPassFilterAmount(double amount);
+    void setMidBandPassFilterAmount(double amount);
 
     void start();
     void stop();
