@@ -32,9 +32,17 @@ public:
     bool isInterestedInFileDrag (const juce::StringArray& files) override;
     void filesDropped (const juce::StringArray& file, int x, int y) override;
     
-    void timerCallback() override; 
+    void timerCallback() override;
+    
+    void mouseDown(const juce::MouseEvent& event) override;
+    void mouseDrag(const juce::MouseEvent& event) override;
 private:
     float rotationAngle = 0.0f;
+    float startAngle = 0.0f;
+    float initialRotationAngle = 0.0f;
+    
+    float initialRelativePosition = 0.0f;
+    
     DJAudioPlayer* djAudioPlayer;
     
     juce::TextButton playButton;
@@ -44,6 +52,10 @@ private:
     juce::Slider volumeSlider;
     juce::Slider positionSlider;
     juce::Slider speedSlider;
+    
+    juce::Slider reverb;
+    juce::Slider flanger;
+    juce::Slider delay;
     
     juce::Image deckImage;
     

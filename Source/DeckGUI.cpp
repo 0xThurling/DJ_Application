@@ -22,14 +22,23 @@ DeckGUI::DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager
     juce::File imageFile = appDir.getChildFile("Resources/deck.png");
     deckImage = juce::ImageCache::getFromFile(imageFile);
     
+    speedSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
+    
+    reverb.setSliderStyle(juce::Slider::SliderStyle::Rotary);
+    flanger.setSliderStyle(juce::Slider::SliderStyle::Rotary);
+    delay.setSliderStyle(juce::Slider::SliderStyle::Rotary);
     
     volumeSlider.setRange(0, 1);
     positionSlider.setRange(0, 1);
-    speedSlider.setRange(0, 1);
+    speedSlider.setRange(0, 2);
+    
+    reverb.setRange(0, 1);
     
     playButton.setButtonText("PLAY");
     stopButton.setButtonText("STOP");
     loadButton.setButtonText("LOAD");
+    
+    speedSlider.setValue(1.0f);
     
     addAndMakeVisible(playButton);
     addAndMakeVisible(stopButton);
@@ -38,6 +47,7 @@ DeckGUI::DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager
     addAndMakeVisible(positionSlider);
     addAndMakeVisible(speedSlider);
     addAndMakeVisible(waveformDisplay);
+    addAndMakeVisible(reverb);
     
     playButton.addListener(this);
     stopButton.addListener(this);
@@ -45,6 +55,14 @@ DeckGUI::DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager
     volumeSlider.addListener(this);
     positionSlider.addListener(this);
     speedSlider.addListener(this);
+    
+    reverb.addListener(this);
+    
+    speedSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    
+    reverb.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    flanger.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    delay.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     
     startTimer(30);
 }
@@ -62,8 +80,8 @@ void DeckGUI::paint (juce::Graphics& g)
         auto imageBounds = deckImage.getBounds().toFloat();
 
         // Calculate individual scale factors.
-        float scaleX = bounds.getWidth() / imageBounds.getWidth();
-        float scaleY = bounds.getHeight() / imageBounds.getHeight();
+        float scaleX = bounds.getWidth() / (imageBounds.getWidth() * 2);
+        float scaleY = bounds.getHeight() / (imageBounds.getHeight() * 2);
 
         // Use the minimum scale factor to preserve the aspect ratio.
         float uniformScale = std::min(scaleX, scaleY);
@@ -92,6 +110,15 @@ void DeckGUI::resized()
     float rowH = getHeight()/8;
     playButton.setBounds(0, 0, getWidth(), rowH);
     stopButton.setBounds(0, rowH, getWidth(), rowH);
+    
+    // Speed slider
+    speedSlider.setBounds((getWidth()/8) * 7, rowH * 4, (getWidth()/8), rowH * 3);
+    
+    // Effects sliders
+    reverb.setBounds(0, rowH * 6, (getWidth()/8) * 2, rowH);
+    flanger.setBounds((getWidth()/8) * 2, rowH * 6, (getWidth()/8) * 2, rowH);
+    delay.setBounds((getWidth()/8) * 4, rowH * 6, (getWidth()/8) * 2, rowH);
+    
     waveformDisplay.setBounds(0, rowH * 7, getWidth(), rowH);
 }
 
@@ -133,6 +160,10 @@ void DeckGUI::sliderValueChanged(juce::Slider* slider) {
     if (slider == &speedSlider) {
         djAudioPlayer->setSpeed(slider->getValue());
     }
+    
+    if (slider == &reverb) {
+        djAudioPlayer->setReverbAmount(slider->getValue());
+    }
 }
 
 bool DeckGUI::isInterestedInFileDrag(const juce::StringArray& files) {
@@ -148,6 +179,29 @@ void DeckGUI::filesDropped(const juce::StringArray& files, int x, int y) {
         waveformDisplay.loadUrl(fileUrl);
         return;
     }
+}
+
+void DeckGUI::mouseDown(const juce::MouseEvent& event) {
+    DBG("Mouse is down");
+    auto centre = getLocalBounds().toFloat().getCentre();
+    startAngle = std::atan2(event.position.y - centre.y, event.position.x - centre.x);
+    initialRotationAngle = rotationAngle;
+    
+    initialRelativePosition = djAudioPlayer->getPositionRelative();
+}
+
+void DeckGUI::mouseDrag(const juce::MouseEvent& event) {
+    auto centre = getLocalBounds().toFloat().getCentre();
+    float currentAngle = std::atan2(event.position.y - centre.y, event.position.x - centre.x);
+    float deltaAngle = currentAngle - startAngle;
+    rotationAngle = initialRotationAngle + deltaAngle;
+    
+    float deltaRelative = deltaAngle / (2 * juce::MathConstants<float>::pi);
+    float newRelative = juce::jlimit(0.0f, 1.0f, initialRelativePosition + deltaRelative);
+    
+    djAudioPlayer->setPositionRelative(newRelative);
+    
+    repaint();
 }
 
 void DeckGUI::timerCallback()

@@ -69,10 +69,10 @@ void MainComponent::resized()
     // This is called when the MainContentComponent is resized.
     // If you add any child components, this is where you should
     // update their positions.
-    deck1.setBounds(0, 0, (getWidth()/8) * 3, getHeight()/2);
-    deck2.setBounds((getWidth()/8) * 5, 0, (getWidth()/8) * 3, getHeight()/2);
+    deck1.setBounds(0, 0, (getWidth()/8) * 3, (getHeight()/3) * 2);
+    deck2.setBounds((getWidth()/8) * 5, 0, (getWidth()/8) * 3, (getHeight()/3) * 2);
     
-    mixerView.setBounds((getWidth()/8) * 3, 0, (getWidth()/8) * 2, getHeight()/2);
+    mixerView.setBounds((getWidth()/8) * 3, 0, (getWidth()/8) * 2, (getHeight()/3) * 2);
     
-    playlistComponent.setBounds(0, getHeight()/2, getWidth(), getHeight()/2);
+    playlistComponent.setBounds(0, (getHeight()/3) * 2, getWidth(), (getHeight()/3) * 1);
 }

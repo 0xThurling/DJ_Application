@@ -12,7 +12,14 @@ Author:  matthew
 
 DJAudioPlayer::DJAudioPlayer()
 {
-
+    reverbParams.roomSize = 0.9f;
+    reverbParams.damping = 0.5f;
+    reverbParams.wetLevel = reverbWetDryMix;
+    reverbParams.dryLevel = 1.0f - reverbWetDryMix;
+    reverbParams.width = 5.0f;
+    reverbParams.freezeMode = 0.0f;
+    
+    reverb.setParameters(reverbParams);
 }
 DJAudioPlayer::~DJAudioPlayer()
 {
@@ -44,6 +51,13 @@ void DJAudioPlayer::prepareToPlay (int samplesPerBlockExpected, double sampleRat
     midBandPassFilter.prepare(spec);
     auto midCoeffs = juce::dsp::IIR::Coefficients<float>::makeBandPass(sampleRate, midCutoff, midQualityFactor);
     *midBandPassFilter.coefficients = *midCoeffs;
+    
+    // Setup reverb processing
+    juce::dsp::ProcessSpec reverbSpec;
+    reverbSpec.sampleRate = sampleRate;
+    reverbSpec.maximumBlockSize = samplesPerBlockExpected;
+    reverbSpec.numChannels = 1;
+    reverb.prepare(reverbSpec);
     
     // Store sample rate for later processing needed
     djSampleRate = sampleRate;
@@ -93,6 +107,13 @@ void DJAudioPlayer::getNextAudioBlock (const juce::AudioSourceChannelInfo& buffe
                             + wet[sample] * (float)midBandPassMix;
         }
     }
+    
+    // ================ REVERB =====================
+    // Process the buffer through the reverb
+    juce::dsp::AudioBlock<float> reverbBlock(*bufferToFill.buffer);
+    juce::dsp::ProcessContextReplacing<float> reverbContext(reverbBlock);
+    reverb.process(reverbContext);
+    // =============================================
 }
 
 void DJAudioPlayer::releaseResources()
@@ -190,4 +211,10 @@ void DJAudioPlayer::setLowPassFilterAmount(double amount) {
 
 void DJAudioPlayer::setMidBandPassFilterAmount(double amount) {
     midBandPassMix = amount;
+}
+
+void DJAudioPlayer::setReverbAmount(double amount) {
+    reverbParams.wetLevel = amount;
+    reverbParams.dryLevel = 1.0f - amount;
+    reverb.setParameters(reverbParams);
 }

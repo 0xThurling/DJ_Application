@@ -16,8 +16,6 @@ class DJAudioPlayer : public juce::AudioSource {
     private:
     juce::AudioFormatManager formatManager;
     std::unique_ptr<juce::AudioFormatReaderSource> readerSource;
-    juce::AudioTransportSource transportSource;
-    juce::ResamplingAudioSource resampleSource{&transportSource, false, 2};
     
     double hpCutoff = 100.0f;
     double hpQualityFactor = 0.7071f;
@@ -33,9 +31,17 @@ class DJAudioPlayer : public juce::AudioSource {
     juce::dsp::IIR::Filter<float> midBandPassFilter;
     
     double djSampleRate;
+    
+    juce::dsp::Reverb reverb;
+    juce::dsp::Reverb::Parameters reverbParams;
+    
+    double reverbWetDryMix = 0.01f;
     public:
     DJAudioPlayer();
     ~DJAudioPlayer();
+    
+    juce::AudioTransportSource transportSource;
+    juce::ResamplingAudioSource resampleSource{&transportSource, false, 2};
 
     void prepareToPlay (int samplesPerBlockExpected, double sampleRate) override;
     void getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill) override;
@@ -49,6 +55,7 @@ class DJAudioPlayer : public juce::AudioSource {
     void setHighPassFilterAmount(double amount);
     void setLowPassFilterAmount(double amount);
     void setMidBandPassFilterAmount(double amount);
+    void setReverbAmount(double amount);
 
     void start();
     void stop();
