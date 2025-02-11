@@ -20,6 +20,13 @@ DJAudioPlayer::DJAudioPlayer()
     reverbParams.freezeMode = 0.0f;
     
     reverb.setParameters(reverbParams);
+    
+    // Flanger
+    flanger.setCentreDelay(0.001f);
+    flanger.setRate(0.1f);
+    flanger.setDepth(1.0f);
+    flanger.setFeedback(0.7f);
+    flanger.setMix(flangerWetDryMix);
 }
 DJAudioPlayer::~DJAudioPlayer()
 {
@@ -58,6 +65,13 @@ void DJAudioPlayer::prepareToPlay (int samplesPerBlockExpected, double sampleRat
     reverbSpec.maximumBlockSize = samplesPerBlockExpected;
     reverbSpec.numChannels = 1;
     reverb.prepare(reverbSpec);
+    
+    // Flanger spec
+    juce::dsp::ProcessSpec flangerSpec;
+    flangerSpec.sampleRate = sampleRate;
+    flangerSpec.maximumBlockSize = samplesPerBlockExpected;
+    flangerSpec.numChannels = 1;
+    flanger.prepare(flangerSpec);
     
     // Store sample rate for later processing needed
     djSampleRate = sampleRate;
@@ -113,6 +127,34 @@ void DJAudioPlayer::getNextAudioBlock (const juce::AudioSourceChannelInfo& buffe
     juce::dsp::AudioBlock<float> reverbBlock(*bufferToFill.buffer);
     juce::dsp::ProcessContextReplacing<float> reverbContext(reverbBlock);
     reverb.process(reverbContext);
+    // =============================================
+    
+    // ================ FILTER =====================
+    auto flangerBlock = juce::dsp::AudioBlock<float>(*bufferToFill.buffer).getSubBlock(bufferToFill.startSample, bufferToFill.numSamples);
+    juce::dsp::ProcessContextReplacing<float> flangerContext(flangerBlock);
+    flanger.process(flangerContext);
+    // =============================================
+    
+    // ================ TREMOLO =====================
+    const int samples = bufferToFill.numSamples;
+    const int channels = bufferToFill.buffer->getNumChannels();
+    
+    for (int sample = 0; sample < numSamples; ++sample) {
+        float lfoValue = (std::sin(volumeLFOPhase) + 1.0f) * 0.5f;
+        
+        float currentGain = (1.0f - volumeLFOdepth) + (volumeLFOdepth * lfoValue);
+        
+        for (int channel = 0; channel < channels; ++channel) {
+            float* channelData = bufferToFill.buffer->getWritePointer(channel);
+            channelData[sample] *= currentGain;
+        }
+        
+        volumeLFOPhase += juce::MathConstants<float>::twoPi * volumeLFOrate / djSampleRate;
+        
+        if (volumeLFOPhase >= juce::MathConstants<float>::twoPi) {
+            volumeLFOPhase -= juce::MathConstants<float>::twoPi;
+        }
+    }
     // =============================================
 }
 
@@ -217,4 +259,12 @@ void DJAudioPlayer::setReverbAmount(double amount) {
     reverbParams.wetLevel = amount;
     reverbParams.dryLevel = 1.0f - amount;
     reverb.setParameters(reverbParams);
+}
+
+void DJAudioPlayer::setFlangerAmount(double amount) {
+    flanger.setMix(amount);
+}
+
+void DJAudioPlayer::setTremelo(double amount) {
+    volumeLFOdepth = amount;
 }

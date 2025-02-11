@@ -30,19 +30,28 @@ class DJAudioPlayer : public juce::AudioSource {
     double midBandPassMix = 0.0;
     juce::dsp::IIR::Filter<float> midBandPassFilter;
     
+    float volumeLFOPhase = 0.0f;
+    float volumeLFOrate = 10.0f;
+    float volumeLFOdepth = 0.0f;
+    
     double djSampleRate;
     
     juce::dsp::Reverb reverb;
     juce::dsp::Reverb::Parameters reverbParams;
     
-    double reverbWetDryMix = 0.01f;
+    double reverbWetDryMix = 0.0f;
+    
+    juce::dsp::Chorus<float> flanger;
+    
+    double flangerWetDryMix = 0.0f;
+    
     public:
     DJAudioPlayer();
     ~DJAudioPlayer();
     
     juce::AudioTransportSource transportSource;
     juce::ResamplingAudioSource resampleSource{&transportSource, false, 2};
-
+    
     void prepareToPlay (int samplesPerBlockExpected, double sampleRate) override;
     void getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill) override;
     void releaseResources() override;
@@ -56,6 +65,8 @@ class DJAudioPlayer : public juce::AudioSource {
     void setLowPassFilterAmount(double amount);
     void setMidBandPassFilterAmount(double amount);
     void setReverbAmount(double amount);
+    void setFlangerAmount(double amount);
+    void setTremelo(double amount);
 
     void start();
     void stop();

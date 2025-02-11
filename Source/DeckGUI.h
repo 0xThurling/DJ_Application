@@ -55,7 +55,7 @@ private:
     
     juce::Slider reverb;
     juce::Slider flanger;
-    juce::Slider delay;
+    juce::Slider cut;
     
     juce::Image deckImage;
     

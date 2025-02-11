@@ -26,13 +26,15 @@ DeckGUI::DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager
     
     reverb.setSliderStyle(juce::Slider::SliderStyle::Rotary);
     flanger.setSliderStyle(juce::Slider::SliderStyle::Rotary);
-    delay.setSliderStyle(juce::Slider::SliderStyle::Rotary);
+    cut.setSliderStyle(juce::Slider::SliderStyle::Rotary);
     
     volumeSlider.setRange(0, 1);
     positionSlider.setRange(0, 1);
     speedSlider.setRange(0, 2);
     
     reverb.setRange(0, 1);
+    flanger.setRange(0, 1);
+    cut.setRange(0, 1);
     
     playButton.setButtonText("PLAY");
     stopButton.setButtonText("STOP");
@@ -48,6 +50,8 @@ DeckGUI::DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager
     addAndMakeVisible(speedSlider);
     addAndMakeVisible(waveformDisplay);
     addAndMakeVisible(reverb);
+    addAndMakeVisible(flanger);
+    addAndMakeVisible(cut);
     
     playButton.addListener(this);
     stopButton.addListener(this);
@@ -57,12 +61,14 @@ DeckGUI::DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager
     speedSlider.addListener(this);
     
     reverb.addListener(this);
+    flanger.addListener(this);
+    cut.addListener(this);
     
     speedSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     
     reverb.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     flanger.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    delay.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    cut.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     
     startTimer(30);
 }
@@ -117,7 +123,7 @@ void DeckGUI::resized()
     // Effects sliders
     reverb.setBounds(0, rowH * 6, (getWidth()/8) * 2, rowH);
     flanger.setBounds((getWidth()/8) * 2, rowH * 6, (getWidth()/8) * 2, rowH);
-    delay.setBounds((getWidth()/8) * 4, rowH * 6, (getWidth()/8) * 2, rowH);
+    cut.setBounds((getWidth()/8) * 4, rowH * 6, (getWidth()/8) * 2, rowH);
     
     waveformDisplay.setBounds(0, rowH * 7, getWidth(), rowH);
 }
@@ -163,6 +169,14 @@ void DeckGUI::sliderValueChanged(juce::Slider* slider) {
     
     if (slider == &reverb) {
         djAudioPlayer->setReverbAmount(slider->getValue());
+    }
+    
+    if (slider == &flanger) {
+        djAudioPlayer->setFlangerAmount(slider->getValue());
+    }
+    
+    if (slider == &cut) {
+        djAudioPlayer->setTremelo(slider->getValue());
     }
 }
 
