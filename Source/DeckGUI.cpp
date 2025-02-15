@@ -70,7 +70,7 @@ DeckGUI::DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager
     flanger.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     cut.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     
-    startTimer(30);
+    startTimer(10);
 }
 
 DeckGUI::~DeckGUI()
@@ -232,4 +232,9 @@ void DeckGUI::timerCallback()
         
         repaint();
     }
+}
+
+void DeckGUI::loadUrl(juce::URL fileURL) {
+    djAudioPlayer->loadURL(fileURL);
+    waveformDisplay.loadUrl(fileURL);
 }

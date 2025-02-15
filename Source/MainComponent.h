@@ -40,7 +40,7 @@ private:
     
     MixerView mixerView{&player1, &player2};
     
-    Playlist playlistComponent;
+    Playlist playlistComponent {formatManager, thumbnailCache, deck1, deck2};
     
     juce::MixerAudioSource mixer;
     

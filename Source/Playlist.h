@@ -11,14 +11,21 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "WaveformDisplay.h"
+#include "DeckGUI.h"
 
 //==============================================================================
 /*
 */
-class Playlist  : public juce::Component, public juce::TableListBoxModel, public juce::Button::Listener
+struct PlaylistFileInformation {
+    juce::File file;
+    juce::URL fileUrl;
+};
+
+class Playlist  : public juce::Component, public juce::TableListBoxModel, public juce::Button::Listener, public juce::FileDragAndDropTarget
 {
 public:
-    Playlist();
+    Playlist(juce::AudioFormatManager& formatManager, juce::AudioThumbnailCache& cache, DeckGUI& deck1, DeckGUI& deck2);
     ~Playlist() override;
 
     void paint (juce::Graphics&) override;
@@ -34,11 +41,22 @@ public:
     
     juce::Component* refreshComponentForCell (int rowNumber, int columnId, bool isRowSelected, Component* existingComponentToUpdate) override;
     
+    bool isInterestedInFileDrag (const juce::StringArray& files) override;
+    void filesDropped (const juce::StringArray& file, int x, int y) override;
+    
     void buttonClicked(juce::Button* button) override;
 private:
-    juce::TableListBox tableComponent;
+    juce::AudioThumbnailCache& audioThumbnail;
+    juce::AudioFormatManager& audioFormatManager;
     
-    std::vector<std::string> trackTitle;
+    DeckGUI& deck1;
+    DeckGUI& deck2;
+    
+    juce::TableListBox tableComponent;
+
+    std::vector<PlaylistFileInformation> playlistFiles;
+    
+    std::vector<std::string> split(const std::string &s, char delimiter);
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Playlist)
 };

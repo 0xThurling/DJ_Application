@@ -36,6 +36,8 @@ public:
     
     void mouseDown(const juce::MouseEvent& event) override;
     void mouseDrag(const juce::MouseEvent& event) override;
+    
+    void loadUrl(juce::URL file);
 private:
     float rotationAngle = 0.0f;
     float startAngle = 0.0f;
