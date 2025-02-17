@@ -12,6 +12,7 @@
 
 #include <JuceHeader.h>
 #include "DJAudioPlayer.h"
+#include "CustomLookAndFeel.h"
 
 //==============================================================================
 /*
@@ -27,6 +28,8 @@ public:
     
     void sliderValueChanged(juce::Slider* slider) override;
 private:
+    std::vector<std::unique_ptr<juce::LookAndFeel>> lookAndFeels;
+    
     DJAudioPlayer* djAudioPlayer1;
     DJAudioPlayer* djAudioPlayer2;
     

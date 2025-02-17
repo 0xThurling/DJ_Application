@@ -13,6 +13,7 @@
 #include <JuceHeader.h>
 #include "DJAudioPlayer.h"
 #include "WaveformDisplay.h"
+#include "CustomLookAndFeel.h"
 
 //==============================================================================
 /*
@@ -39,6 +40,8 @@ public:
     
     void loadUrl(juce::URL file);
 private:
+    std::vector<std::unique_ptr<juce::LookAndFeel>> lookAndFeels;
+    
     float rotationAngle = 0.0f;
     float startAngle = 0.0f;
     float initialRotationAngle = 0.0f;

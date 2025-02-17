@@ -16,6 +16,7 @@ MixerView::MixerView(DJAudioPlayer* _player1, DJAudioPlayer* _player2) : djAudio
 {
     // In your constructor, you should add any child components, and
     // initialise any special settings that your component needs.
+    auto customLookAndFeel = std::make_unique<CustomLookAndFeel>(0.15f);
     
     volumeSliderA.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
     volumeSliderB.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
@@ -27,6 +28,14 @@ MixerView::MixerView(DJAudioPlayer* _player1, DJAudioPlayer* _player2) : djAudio
     trackBHighPassSlider.setSliderStyle(juce::Slider::SliderStyle::Rotary);
     trackBMidPassSlider.setSliderStyle(juce::Slider::SliderStyle::Rotary);
     trackBLowPassSlider.setSliderStyle(juce::Slider::SliderStyle::Rotary);
+    
+    trackAHighPassSlider.setLookAndFeel(customLookAndFeel.get());
+    trackAMidPassSlider.setLookAndFeel(customLookAndFeel.get());
+    trackALowPassSlider.setLookAndFeel(customLookAndFeel.get());
+    
+    trackBHighPassSlider.setLookAndFeel(customLookAndFeel.get());
+    trackBMidPassSlider.setLookAndFeel(customLookAndFeel.get());
+    trackBLowPassSlider.setLookAndFeel(customLookAndFeel.get());
     
     mixerSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     volumeSliderA.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
@@ -84,6 +93,8 @@ MixerView::MixerView(DJAudioPlayer* _player1, DJAudioPlayer* _player2) : djAudio
     trackBHighPassSlider.addListener(this);
     trackBMidPassSlider.addListener(this);
     trackBLowPassSlider.addListener(this);
+    
+    lookAndFeels.emplace_back(std::move(customLookAndFeel));
 }
 
 MixerView::~MixerView()

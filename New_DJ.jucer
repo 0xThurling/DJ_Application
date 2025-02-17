@@ -7,6 +7,10 @@
       <FILE id="BAo5zd" name="MixerView.cpp" compile="1" resource="0" file="Source/MixerView.cpp"/>
       <FILE id="pjHnnS" name="MixerView.h" compile="0" resource="0" file="Source/MixerView.h"/>
       <FILE id="kJzWki" name="Playlist.cpp" compile="1" resource="0" file="Source/Playlist.cpp"/>
+      <FILE id="gowcrH" name="CustomLookAndFeel.cpp" compile="1" resource="0"
+            file="Source/CustomLookAndFeel.cpp"/>
+      <FILE id="rF0iIO" name="CustomLookAndFeel.h" compile="0" resource="0"
+            file="Source/CustomLookAndFeel.h"/>
       <FILE id="bPStbs" name="Playlist.h" compile="0" resource="0" file="Source/Playlist.h"/>
       <FILE id="AbMrbl" name="WaveformDisplay.cpp" compile="1" resource="0"
             file="Source/WaveformDisplay.cpp"/>

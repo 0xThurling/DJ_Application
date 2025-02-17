@@ -17,7 +17,29 @@ Playlist::Playlist(juce::AudioFormatManager& formatManager, juce::AudioThumbnail
 {
     // In your constructor, you should add any child components, and
     // initialise any special settings that your component needs.
-
+    formatManager.registerBasicFormats();
+    
+    juce::File appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
+    
+    juce::File file = appDir.getChildFile("Resources/song_1.wav");
+    
+    if (file.exists()) {
+        DBG("WORKING");
+    }
+    
+    juce::File fl = juce::File{file};
+    juce::URL fileUrl = juce::URL{juce::File{fl}};
+    
+    PlaylistFileInformation fileInfo {
+        fl,
+        fileUrl
+    };
+    
+    playlistFiles.push_back(fileInfo);
+    
+    tableComponent.updateContent();
+    repaint();
+    
     addAndMakeVisible(tableComponent);
     
     tableComponent.getHeader().addColumn("Track Title", 1, 200);

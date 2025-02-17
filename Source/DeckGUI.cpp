@@ -15,6 +15,8 @@
 DeckGUI::DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager, juce::AudioThumbnailCache& cache)
                 : djAudioPlayer(_player), waveformDisplay(formatManager, cache)
 {
+    auto customLookAndFeel = std::make_unique<CustomLookAndFeel>(0.2f);
+    
     // In your constructor, you should add any child components, and
     // initialise any special settings that your component needs.
     juce::File appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
@@ -27,6 +29,10 @@ DeckGUI::DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager
     reverb.setSliderStyle(juce::Slider::SliderStyle::Rotary);
     flanger.setSliderStyle(juce::Slider::SliderStyle::Rotary);
     cut.setSliderStyle(juce::Slider::SliderStyle::Rotary);
+    
+    reverb.setLookAndFeel(customLookAndFeel.get());
+    flanger.setLookAndFeel(customLookAndFeel.get());
+    cut.setLookAndFeel(customLookAndFeel.get());
     
     volumeSlider.setRange(0, 1);
     positionSlider.setRange(0, 1);
@@ -71,6 +77,8 @@ DeckGUI::DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager
     cut.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     
     startTimer(10);
+    
+    lookAndFeels.emplace_back(std::move(customLookAndFeel));
 }
 
 DeckGUI::~DeckGUI()

@@ -25,8 +25,6 @@ MainComponent::MainComponent()
     addAndMakeVisible(deck2);
     addAndMakeVisible(mixerView);
     addAndMakeVisible(playlistComponent);
-    
-    formatManager.registerBasicFormats();
 }
 
 MainComponent::~MainComponent()
