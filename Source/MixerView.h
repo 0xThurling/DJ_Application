@@ -47,5 +47,7 @@ private:
     juce::Slider trackBMidPassSlider;
     juce::Slider trackBLowPassSlider;
     
+    juce::Image backgroundImage;
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MixerView)
 };

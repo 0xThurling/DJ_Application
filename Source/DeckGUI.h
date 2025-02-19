@@ -63,6 +63,10 @@ private:
     juce::Slider cut;
     
     juce::Image deckImage;
+    juce::Image knobImage;
+    juce::Image backgroundImage;
+    juce::Image deck_face_image;
+    juce::Image deck_spinner_image;
     
     juce::FileChooser fChooser {"Select a file..."};
     

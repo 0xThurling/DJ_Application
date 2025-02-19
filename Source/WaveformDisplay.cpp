@@ -33,12 +33,12 @@ void WaveformDisplay::paint (juce::Graphics& g)
        drawing code..
     */
 
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));   // clear the background
+    g.fillAll (juce::Colours::black);   // clear the background
 
     g.setColour (juce::Colours::grey);
     g.drawRect (getLocalBounds(), 1);   // draw an outline around the component
 
-    g.setColour (juce::Colours::orange);
+    g.setColour (juce::Colours::red);
     if(fileLoaded)
     {
         audioThumbnail.drawChannel(g,

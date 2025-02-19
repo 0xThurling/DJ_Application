@@ -15,16 +15,28 @@
 DeckGUI::DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager, juce::AudioThumbnailCache& cache)
                 : djAudioPlayer(_player), waveformDisplay(formatManager, cache)
 {
-    auto customLookAndFeel = std::make_unique<CustomLookAndFeel>(0.2f);
+    auto customLookAndFeel = std::make_unique<CustomLookAndFeel>(0.6f);
     
     // In your constructor, you should add any child components, and
     // initialise any special settings that your component needs.
     juce::File appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
     
-    juce::File imageFile = appDir.getChildFile("Resources/deck.png");
+    juce::File imageFile = appDir.getChildFile("Resources/deck_spinner.png");
     deckImage = juce::ImageCache::getFromFile(imageFile);
     
+    appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
+    
+    imageFile = appDir.getChildFile("Resources/deck_face.png");
+    deck_face_image = juce::ImageCache::getFromFile(imageFile);
+    
+    appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
+    
+    imageFile = appDir.getChildFile("Resources/background_info.png");
+    backgroundImage = juce::ImageCache::getFromFile(imageFile);
+    
     speedSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
+    
+    speedSlider.setLookAndFeel(customLookAndFeel.get());
     
     reverb.setSliderStyle(juce::Slider::SliderStyle::Rotary);
     flanger.setSliderStyle(juce::Slider::SliderStyle::Rotary);
@@ -92,6 +104,7 @@ void DeckGUI::paint (juce::Graphics& g)
     if (deckImage.isValid()) {
         auto bounds = getLocalBounds().toFloat();
         auto imageBounds = deckImage.getBounds().toFloat();
+        auto faceBounds = deck_face_image.getBounds().toFloat();
 
         // Calculate individual scale factors.
         float scaleX = bounds.getWidth() / (imageBounds.getWidth() * 2);
@@ -103,7 +116,8 @@ void DeckGUI::paint (juce::Graphics& g)
         // Optionally, translate the image such that it is centered.
         auto imageCentre = imageBounds.getCentre();
         auto boundsCentre = bounds.getCentre();
-
+        auto faceCentre = faceBounds.getCentre();
+        
         // Create a transform: first translate the image so its centre is at the origin,
         // then apply the uniform scaling and rotation,
         // and finally translate it to the component's centre.
@@ -111,9 +125,15 @@ void DeckGUI::paint (juce::Graphics& g)
                              .scaled(uniformScale)
                              .rotated(rotationAngle)
                              .translated(boundsCentre.x, boundsCentre.y);
+        
+        auto deck_face_transform = juce::AffineTransform::translation(-faceCentre.x, -faceCentre.y)
+            .scaled(uniformScale)
+            .translated(boundsCentre.x, boundsCentre.y);
 
         // Draw the transformed image.
+        g.drawImage(backgroundImage, getLocalBounds().toFloat(), juce::RectanglePlacement::stretchToFit);
         g.drawImageTransformed(deckImage, transform);
+        g.drawImageTransformed(deck_face_image, deck_face_transform);
     }
 }
 

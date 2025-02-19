@@ -16,10 +16,14 @@ MixerView::MixerView(DJAudioPlayer* _player1, DJAudioPlayer* _player2) : djAudio
 {
     // In your constructor, you should add any child components, and
     // initialise any special settings that your component needs.
-    auto customLookAndFeel = std::make_unique<CustomLookAndFeel>(0.15f);
+    auto customLookAndFeel = std::make_unique<CustomLookAndFeel>(0.4f);
     
     volumeSliderA.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
     volumeSliderB.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
+    
+    volumeSliderA.setLookAndFeel(customLookAndFeel.get());
+    volumeSliderB.setLookAndFeel(customLookAndFeel.get());
+    mixerSlider.setLookAndFeel(customLookAndFeel.get());
     
     trackAHighPassSlider.setSliderStyle(juce::Slider::SliderStyle::Rotary);
     trackAMidPassSlider.setSliderStyle(juce::Slider::SliderStyle::Rotary);
@@ -62,7 +66,9 @@ MixerView::MixerView(DJAudioPlayer* _player1, DJAudioPlayer* _player2) : djAudio
     trackBLowPassSlider.setRange(0.1, 0.99);
     
     mixerLabel.setText("Cross-Fade", juce::dontSendNotification);
+    mixerLabel.setFont(juce::Font("Helvetica", 16.0f, juce::Font::plain));
     mixerLabel.attachToComponent(&mixerSlider, false);
+    mixerLabel.setColour(juce::Label::textColourId, juce::Colour {50,50,50});
     
     addAndMakeVisible(mixerSlider);
     addAndMakeVisible(mixerLabel);
@@ -95,6 +101,12 @@ MixerView::MixerView(DJAudioPlayer* _player1, DJAudioPlayer* _player2) : djAudio
     trackBLowPassSlider.addListener(this);
     
     lookAndFeels.emplace_back(std::move(customLookAndFeel));
+    
+    juce::File appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
+    
+    juce::File imageFile = appDir.getChildFile("Resources/background_info.png");
+    backgroundImage = juce::ImageCache::getFromFile(imageFile);
+    
 }
 
 MixerView::~MixerView()
@@ -110,9 +122,8 @@ void MixerView::paint (juce::Graphics& g)
        drawing code..
     */
 
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));   // clear the background
+    g.fillAll (juce::Colour {233, 233, 233});
 
-    g.setColour (juce::Colours::grey);
     g.drawRect (getLocalBounds(), 1);   // draw an outline around the component
 }
 
