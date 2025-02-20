@@ -24,15 +24,39 @@ DeckGUI::DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager
     juce::File imageFile = appDir.getChildFile("Resources/deck_spinner.png");
     deckImage = juce::ImageCache::getFromFile(imageFile);
     
-    appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
-    
     imageFile = appDir.getChildFile("Resources/deck_face.png");
     deck_face_image = juce::ImageCache::getFromFile(imageFile);
     
-    appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
-    
     imageFile = appDir.getChildFile("Resources/background_info.png");
     backgroundImage = juce::ImageCache::getFromFile(imageFile);
+    
+    imageFile = appDir.getChildFile("Resources/stop.png");
+    stop_image = juce::ImageCache::getFromFile(imageFile);
+    
+    imageFile = appDir.getChildFile("Resources/play.png");
+    play_image = juce::ImageCache::getFromFile(imageFile);
+        
+    playImageButton = std::make_unique<juce::ImageButton>("playImageButton");
+    
+    // Set images for the button states: normal, over, and down.
+    playImageButton->setImages(true, true, true,
+                               play_image, 1.0f, juce::Colours::transparentBlack,  // normal state image
+                               play_image, 1.0f, juce::Colours::transparentBlack,  // over state image
+                               play_image, 1.0f, juce::Colours::transparentBlack); // down state image
+
+    // Make the button visible in your component
+    addAndMakeVisible(playImageButton.get());
+    
+    stopImageButton = std::make_unique<juce::ImageButton>("stopImageButton");
+    
+    // Set images for the button states: normal, over, and down.
+    stopImageButton->setImages(true, true, true,
+                               stop_image, 1.0f, juce::Colours::transparentBlack,  // normal state image
+                               stop_image, 1.0f, juce::Colours::transparentBlack,  // over state image
+                               stop_image, 1.0f, juce::Colours::transparentBlack); // down state image
+
+    // Make the button visible in your component
+    addAndMakeVisible(stopImageButton.get());
     
     speedSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
     
@@ -59,9 +83,7 @@ DeckGUI::DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager
     loadButton.setButtonText("LOAD");
     
     speedSlider.setValue(1.0f);
-    
-    addAndMakeVisible(playButton);
-    addAndMakeVisible(stopButton);
+
     addAndMakeVisible(loadButton);
     addAndMakeVisible(volumeSlider);
     addAndMakeVisible(positionSlider);
@@ -71,12 +93,12 @@ DeckGUI::DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager
     addAndMakeVisible(flanger);
     addAndMakeVisible(cut);
     
-    playButton.addListener(this);
-    stopButton.addListener(this);
     loadButton.addListener(this);
     volumeSlider.addListener(this);
     positionSlider.addListener(this);
     speedSlider.addListener(this);
+    playImageButton->addListener(this);
+    stopImageButton->addListener(this);
     
     reverb.addListener(this);
     flanger.addListener(this);
@@ -135,6 +157,17 @@ void DeckGUI::paint (juce::Graphics& g)
         g.drawImageTransformed(deckImage, transform);
         g.drawImageTransformed(deck_face_image, deck_face_transform);
     }
+    
+    if (!play)
+    {
+        playImageButton->setVisible(true);
+        stopImageButton->setVisible(false);
+    }
+    else
+    {
+        playImageButton->setVisible(false);
+        stopImageButton->setVisible(true);
+    }
 }
 
 void DeckGUI::resized()
@@ -142,8 +175,6 @@ void DeckGUI::resized()
     // This method is where you should set the bounds of any child
     // components that your component contains..
     float rowH = getHeight()/8;
-    playButton.setBounds(0, 0, getWidth(), rowH);
-    stopButton.setBounds(0, rowH, getWidth(), rowH);
     
     // Speed slider
     speedSlider.setBounds((getWidth()/8) * 7, rowH * 4, (getWidth()/8), rowH * 3);
@@ -153,18 +184,20 @@ void DeckGUI::resized()
     flanger.setBounds((getWidth()/8) * 2, rowH * 6, (getWidth()/8) * 2, rowH);
     cut.setBounds((getWidth()/8) * 4, rowH * 6, (getWidth()/8) * 2, rowH);
     
-    waveformDisplay.setBounds(0, rowH * 7, getWidth(), rowH);
+    waveformDisplay.setBounds(0, 0, getWidth(), rowH);
+    
+    playImageButton->setBounds(10, rowH * 3, play_image.getWidth(), play_image.getHeight());
+    stopImageButton->setBounds(10, rowH * 3, stop_image.getWidth(), stop_image.getHeight());
 }
 
 void DeckGUI::buttonClicked(juce::Button* button) {
-    if (button == &playButton) {
-        DBG("DeckGUI::buttonClicked: You clicked the play button");
+    if (button == playImageButton.get()) {
         djAudioPlayer->setPosition(0);
         djAudioPlayer->start();
         play = true;
     }
     
-    if (button == &stopButton) {
+    if (button == stopImageButton.get()) {
         DBG("DeckGUI::buttonClicked: You clicked the stop button");
         djAudioPlayer->stop();
         play = false;

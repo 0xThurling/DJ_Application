@@ -33,23 +33,32 @@ void WaveformDisplay::paint (juce::Graphics& g)
        drawing code..
     */
 
-    g.fillAll (juce::Colours::black);   // clear the background
+    g.fillAll (juce::Colour {30, 30, 30});   // clear the background
 
     g.setColour (juce::Colours::grey);
-    g.drawRect (getLocalBounds(), 1);   // draw an outline around the component
 
-    g.setColour (juce::Colours::red);
     if(fileLoaded)
     {
-        audioThumbnail.drawChannel(g,
+      audioThumbnail.drawChannel(g,
         getLocalBounds(),
         0,
         audioThumbnail.getTotalLength(),
         0,
         1.0f
       );
+        
+        std::cout << position << std::endl;
+      juce::Rectangle<int> customBounds (0, 0, position * getWidth(), getHeight());
+      g.setColour (juce::Colour {0, 183, 235});
+      audioThumbnail.drawChannel(g,
+                                 customBounds,
+                                 0,
+                                 audioThumbnail.getTotalLength() * position,
+                                 0,
+                                 1.0f
+      );
       g.setColour(juce::Colours::lightgreen);
-      g.drawRect(position * getWidth(), 0, getWidth() / 20, getHeight());
+      g.drawRect(position * getWidth(), 0, 2, getHeight());
     }
     else
     {

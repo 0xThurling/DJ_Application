@@ -68,9 +68,15 @@ private:
     juce::Image deck_face_image;
     juce::Image deck_spinner_image;
     
+    juce::Image play_image;
+    juce::Image stop_image;
+    
     juce::FileChooser fChooser {"Select a file..."};
     
     WaveformDisplay waveformDisplay;
+    
+    std::unique_ptr<juce::ImageButton> playImageButton;
+    std::unique_ptr<juce::ImageButton> stopImageButton;
     
     bool play = false;
     
