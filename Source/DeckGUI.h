@@ -14,6 +14,7 @@
 #include "DJAudioPlayer.h"
 #include "WaveformDisplay.h"
 #include "CustomLookAndFeel.h"
+#include "DeckWaveformDisplay.h"
 
 //==============================================================================
 /*
@@ -21,7 +22,7 @@
 class DeckGUI  : public juce::Component, public juce::Button::Listener, public juce::Slider::Listener, public juce::FileDragAndDropTarget, public juce::Timer
 {
 public:
-    DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager, juce::AudioThumbnailCache& cache);
+    DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager, juce::AudioThumbnailCache& cache, std::string deck_name);
     ~DeckGUI() override;
 
     void paint (juce::Graphics&) override;
@@ -41,6 +42,8 @@ public:
     void loadUrl(juce::URL file);
 private:
     std::vector<std::unique_ptr<juce::LookAndFeel>> lookAndFeels;
+    
+    std::string deck_name;
     
     float rotationAngle = 0.0f;
     float startAngle = 0.0f;
@@ -71,9 +74,13 @@ private:
     juce::Image play_image;
     juce::Image stop_image;
     
+    juce::Image deck_number_image;
+    juce::Image deck_overlay;
+    
     juce::FileChooser fChooser {"Select a file..."};
     
     WaveformDisplay waveformDisplay;
+    DeckWaveformDisplay deckDisplay;
     
     std::unique_ptr<juce::ImageButton> playImageButton;
     std::unique_ptr<juce::ImageButton> stopImageButton;

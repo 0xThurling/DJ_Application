@@ -33,10 +33,10 @@ private:
     juce::AudioThumbnailCache thumbnailCache {20};
     
     DJAudioPlayer player1;
-    DeckGUI deck1 {&player1, formatManager, thumbnailCache};
+    DeckGUI deck1 {&player1, formatManager, thumbnailCache, "deck_a"};
     
     DJAudioPlayer player2;
-    DeckGUI deck2 {&player2, formatManager, thumbnailCache};
+    DeckGUI deck2 {&player2, formatManager, thumbnailCache, "deck_b"};
     
     MixerView mixerView{&player1, &player2};
     

@@ -16,7 +16,7 @@ MixerView::MixerView(DJAudioPlayer* _player1, DJAudioPlayer* _player2) : djAudio
 {
     // In your constructor, you should add any child components, and
     // initialise any special settings that your component needs.
-    auto customLookAndFeel = std::make_unique<CustomLookAndFeel>(0.4f);
+    auto customLookAndFeel = std::make_unique<CustomLookAndFeel>(0.6f);
     
     volumeSliderA.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
     volumeSliderB.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
@@ -135,7 +135,7 @@ void MixerView::resized()
     float width = getWidth()/4;
     
     mixerSlider.setBounds(width, rowH * 7, width * 2, rowH);
-    mixerLabel.setBounds(mixerSlider.getX() + 15, mixerSlider.getBottom() - 60, mixerSlider.getWidth(), 10);
+    mixerLabel.setBounds(mixerSlider.getX() + (mixerSlider.getWidth()/2) / 2 + 10, mixerSlider.getBottom() - 90, mixerSlider.getWidth(), 20);
     
     volumeSliderA.setBounds(0, rowH * 1, getWidth()/4, rowH * 5);
     volumeSliderB.setBounds((getWidth()/4) * 3, rowH * 1, getWidth()/4, rowH * 5);

@@ -1,18 +1,18 @@
 /*
   ==============================================================================
 
-    WaveformDisplay.cpp
-    Created: 30 Jan 2025 6:39:29pm
+    DeckWaveformDisplay.cpp
+    Created: 22 Feb 2025 1:38:07pm
     Author:  Jacques Thurling
 
   ==============================================================================
 */
 
 #include <JuceHeader.h>
-#include "WaveformDisplay.h"
+#include "DeckWaveformDisplay.h"
 
 //==============================================================================
-WaveformDisplay::WaveformDisplay(juce::AudioFormatManager& formatManagerToUse,
+DeckWaveformDisplay::DeckWaveformDisplay(juce::AudioFormatManager& formatManagerToUse,
                                  juce::AudioThumbnailCache& cache) : audioThumbnail(1000, formatManagerToUse, cache), fileLoaded(false), position(0)
 {
     // In your constructor, you should add any child components, and
@@ -20,11 +20,11 @@ WaveformDisplay::WaveformDisplay(juce::AudioFormatManager& formatManagerToUse,
     audioThumbnail.addChangeListener(this);
 }
 
-WaveformDisplay::~WaveformDisplay()
+DeckWaveformDisplay::~DeckWaveformDisplay()
 {
 }
 
-void WaveformDisplay::paint (juce::Graphics& g)
+void DeckWaveformDisplay::paint (juce::Graphics& g)
 {
     /* This demo code just fills the component's background and
        draws some placeholder text to get you started.
@@ -33,31 +33,34 @@ void WaveformDisplay::paint (juce::Graphics& g)
        drawing code..
     */
 
-    g.fillAll (juce::Colour {30, 30, 30});   // clear the background
+    g.fillAll (juce::Colour {44, 44, 44});   // clear the background
 
     g.setColour (juce::Colours::grey);
 
     if(fileLoaded)
     {
-      audioThumbnail.drawChannel(g,
-        getLocalBounds(),
-        0,
-        audioThumbnail.getTotalLength(),
-        0,
-        1.0f
-      );
+        g.beginTransparencyLayer(0.5f);
         
-      juce::Rectangle<int> customBounds (0, 0, position * getWidth(), getHeight());
+//        ColourGradient (Colour colour1, float x1, float y1,
+//                        Colour colour2, float x2, float y2,
+//                        bool isRadial);
+        juce::ColourGradient gradient {
+            juce::Colour {0, 183, 235}.withAlpha(0.0f), getWidth() / 1.0f, getHeight() / 1.0f,
+            juce::Colour {0, 183, 235}.withAlpha(1.0f), 0.0f, 0.0f,
+            true
+        };
+
+
+        g.setGradientFill(gradient);
       g.setColour (juce::Colour {0, 183, 235});
       audioThumbnail.drawChannel(g,
-                                 customBounds,
-                                 0,
+                                 getLocalBounds(),
                                  audioThumbnail.getTotalLength() * position,
+                                 audioThumbnail.getTotalLength() * position + 1,
                                  0,
                                  1.0f
       );
-      g.setColour(juce::Colours::lightgreen);
-      g.drawRect(position * getWidth(), 0, 2, getHeight());
+        g.endTransparencyLayer();
     }
     else
     {
@@ -68,29 +71,29 @@ void WaveformDisplay::paint (juce::Graphics& g)
     }
 }
 
-void WaveformDisplay::resized()
+void DeckWaveformDisplay::resized()
 {
     // This method is where you should set the bounds of any child
     // components that your component contains..
 
 }
 
-void WaveformDisplay::loadUrl(juce::URL url){
+void DeckWaveformDisplay::loadUrl(juce::URL url){
     audioThumbnail.clear();
     fileLoaded = audioThumbnail.setSource(new juce::URLInputSource(url));
 }
 
-void WaveformDisplay::changeListenerCallback (juce::ChangeBroadcaster *source)
+void DeckWaveformDisplay::changeListenerCallback (juce::ChangeBroadcaster *source)
 {
     std::cout << "wfd: change received! " << std::endl;
     repaint();
 }
 
-void WaveformDisplay::setPositionRelative(double pos)
+void DeckWaveformDisplay::setPositionRelative(double pos)
 {
   if (pos != position)
   {
     position = pos;
     repaint();
-  }  
+  }
 }

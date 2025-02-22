@@ -21,21 +21,101 @@ Playlist::Playlist(juce::AudioFormatManager& formatManager, juce::AudioThumbnail
     
     juce::File appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
     
-    juce::File file = appDir.getChildFile("Resources/song_1.wav");
-    
-    if (file.exists()) {
-        DBG("WORKING");
-    }
+    juce::File file = appDir.getChildFile("Resources/Escape.mp3");
     
     juce::File fl = juce::File{file};
     juce::URL fileUrl = juce::URL{juce::File{fl}};
     
-    PlaylistFileInformation fileInfo {
+    PlaylistFileInformation EscapeFile {
         fl,
         fileUrl
     };
     
-    playlistFiles.push_back(fileInfo);
+    playlistFiles.push_back(EscapeFile);
+    
+    appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
+    
+    file = appDir.getChildFile("Resources/Cool.mp3");
+    
+    fl = juce::File{file};
+    fileUrl = juce::URL{juce::File{fl}};
+    
+    PlaylistFileInformation CoolFile {
+        fl,
+        fileUrl
+    };
+    
+    playlistFiles.push_back(CoolFile);
+    
+    appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
+    
+    file = appDir.getChildFile("Resources/Faster.mp3");
+    
+    fl = juce::File{file};
+    fileUrl = juce::URL{juce::File{fl}};
+    
+    PlaylistFileInformation FasterFile {
+        fl,
+        fileUrl
+    };
+    
+    playlistFiles.push_back(FasterFile);
+    
+    appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
+    
+    file = appDir.getChildFile("Resources/History.mp3");
+    
+    fl = juce::File{file};
+    fileUrl = juce::URL{juce::File{fl}};
+    
+    PlaylistFileInformation HistoryFile {
+        fl,
+        fileUrl
+    };
+    
+    playlistFiles.push_back(HistoryFile);
+    
+    appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
+    
+    file = appDir.getChildFile("Resources/Funk.mp3");
+    
+    fl = juce::File{file};
+    fileUrl = juce::URL{juce::File{fl}};
+    
+    PlaylistFileInformation FunkFile {
+        fl,
+        fileUrl
+    };
+    
+    playlistFiles.push_back(FunkFile);
+    
+    appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
+    
+    file = appDir.getChildFile("Resources/Louder.mp3");
+    
+    fl = juce::File{file};
+    fileUrl = juce::URL{juce::File{fl}};
+    
+    PlaylistFileInformation LouderFile {
+        fl,
+        fileUrl
+    };
+    
+    playlistFiles.push_back(LouderFile);
+    
+    appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
+    
+    file = appDir.getChildFile("Resources/Love.mp3");
+    
+    fl = juce::File{file};
+    fileUrl = juce::URL{juce::File{fl}};
+    
+    PlaylistFileInformation LoveFile {
+        fl,
+        fileUrl
+    };
+    
+    playlistFiles.push_back(LoveFile);
     
     tableComponent.updateContent();
     repaint();
@@ -43,9 +123,10 @@ Playlist::Playlist(juce::AudioFormatManager& formatManager, juce::AudioThumbnail
     addAndMakeVisible(tableComponent);
     
     tableComponent.getHeader().addColumn("Track Title", 1, 200);
-    tableComponent.getHeader().addColumn("Waveform", 2, 200);
-    tableComponent.getHeader().addColumn("Load Deck A", 3, 200);
-    tableComponent.getHeader().addColumn("Load Deck B", 4, 200);
+    tableComponent.getHeader().addColumn("Track Length", 2, 200);
+    tableComponent.getHeader().addColumn("Waveform", 3, 200);
+    tableComponent.getHeader().addColumn("Load Deck A", 4, 200);
+    tableComponent.getHeader().addColumn("Load Deck B", 5, 200);
     tableComponent.setModel(this);
 }
 
@@ -56,7 +137,7 @@ Playlist::~Playlist()
 
 void Playlist::paint (juce::Graphics& g)
 {
-    
+    g.fillAll (juce::Colours::grey);
 }
 
 void Playlist::resized()
@@ -65,7 +146,12 @@ void Playlist::resized()
     // components that your component contains..
     
     tableComponent.setBounds(0, 0, getWidth(), getHeight());
-
+    tableComponent.getHeader().setColumnWidth(1, getWidth()/5);
+    tableComponent.getHeader().setColumnWidth(2, getWidth()/5);
+    tableComponent.getHeader().setColumnWidth(3, getWidth()/5);
+    tableComponent.getHeader().setColumnWidth(4, getWidth()/5);
+    tableComponent.getHeader().setColumnWidth(5, getWidth()/5);
+    tableComponent.getHeader().setColour(juce::TableHeaderComponent::backgroundColourId, juce::Colours::white);
 }
 
 int Playlist::getNumRows(){
@@ -74,22 +160,39 @@ int Playlist::getNumRows(){
 
 void Playlist::paintRowBackground(juce::Graphics& g, int rowNumber, int width, int height, bool rowIsSelected) {
     if (rowIsSelected) {
-        g.fillAll(juce::Colours::orange);
+        g.fillAll(juce::Colours::lightblue);
     } else {
-        g.fillAll(juce::Colours::darkgrey);
+        if (rowNumber % 2 == 0) {
+            g.fillAll(juce::Colours::darkgrey);
+        } else {
+            g.fillAll(juce::Colours::grey);
+        }
+        
     }
 }
 
 void Playlist::paintCell(juce::Graphics& g, int rowNumber, int columnId, int width, int height, bool rowIsSelected) {
     if (playlistFiles.size() > 0) {
+        g.setColour(juce::Colours::white);
         if (columnId == 1) {
             g.drawText(playlistFiles[rowNumber].fileUrl.getFileName(), 2, 0, width - 4, height, juce::Justification::centredLeft, true);
+        }
+        
+        if (columnId == 2) {
+            if (auto* reader = audioFormatManager.createReaderFor(playlistFiles[rowNumber].file)) {
+                double lengthInSeconds = static_cast<double>(reader->lengthInSamples) / reader->sampleRate;
+                int minutes = static_cast<int>(lengthInSeconds / 60);
+                int remainingSeconds = static_cast<int>(lengthInSeconds) % 60;
+                juce::String test = juce::String::formatted("%d:%02d", minutes, remainingSeconds);
+                g.drawText(test, 2, 0, width - 4, height, juce::Justification::centredLeft, true);
+                delete reader;
+            }
         }
     }
 }
 
 juce::Component* Playlist::refreshComponentForCell(int rowNumber, int columnId, bool isRowSelected, juce::Component* existingComponentToUpdate) {
-    if (columnId == 2) {
+    if (columnId == 3) {
         if (existingComponentToUpdate == nullptr) {
             auto* waveform = new WaveformDisplay(audioFormatManager, audioThumbnail);
             juce::URL fileUrl = playlistFiles[rowNumber].fileUrl;
@@ -98,7 +201,7 @@ juce::Component* Playlist::refreshComponentForCell(int rowNumber, int columnId, 
         }
     }
     
-    if (columnId == 3) {
+    if (columnId == 4) {
         if (existingComponentToUpdate == nullptr) {
             juce::TextButton* btn = new juce::TextButton("Load Deck A");
             existingComponentToUpdate = btn;
@@ -108,7 +211,7 @@ juce::Component* Playlist::refreshComponentForCell(int rowNumber, int columnId, 
         }
     }
     
-    if (columnId == 4) {
+    if (columnId == 5) {
         if (existingComponentToUpdate == nullptr) {
             juce::TextButton* btn = new juce::TextButton("Load Deck B");
             existingComponentToUpdate = btn;
@@ -131,11 +234,11 @@ void Playlist::buttonClicked(juce::Button* button) {
     std::vector<std::string> temp = split(id, '-');
     
 //     Check if column three is selected
-    if (std::stoi(temp[1]) == 3) {
+    if (std::stoi(temp[1]) == 4) {
         deck1.loadUrl(playlistFiles[std::stoi(temp[0])].fileUrl);
     }
     
-    if (std::stoi(temp[1]) == 4) {
+    if (std::stoi(temp[1]) == 5) {
         std::cout << temp[0] << std::endl;
         deck2.loadUrl(playlistFiles[std::stoi(temp[0])].fileUrl);
     }

@@ -57,7 +57,7 @@ void MainComponent::releaseResources()
 void MainComponent::paint (juce::Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
+    g.fillAll (juce::Colours::grey);
 
     // You can add your drawing code here!
 }
@@ -67,10 +67,10 @@ void MainComponent::resized()
     // This is called when the MainContentComponent is resized.
     // If you add any child components, this is where you should
     // update their positions.
-    deck1.setBounds(0, 0, (getWidth()/8) * 3, (getHeight()/3) * 2);
-    deck2.setBounds((getWidth()/8) * 5, 0, (getWidth()/8) * 3, (getHeight()/3) * 2);
+    deck1.setBounds(0, 0, (getWidth()/8) * 3, (getHeight()/5) * 4);
+    deck2.setBounds((getWidth()/8) * 5, 0, (getWidth()/8) * 3, (getHeight()/5) * 4);
     
-    mixerView.setBounds((getWidth()/8) * 3, 0, (getWidth()/8) * 2, (getHeight()/3) * 2);
+    mixerView.setBounds((getWidth()/8) * 3, 0, (getWidth()/8) * 2, (getHeight()/5) * 4);
     
-    playlistComponent.setBounds(0, (getHeight()/3) * 2, getWidth(), (getHeight()/3) * 1);
+    playlistComponent.setBounds(0, (getHeight()/5) * 4, getWidth(), (getHeight()/5) * 1);
 }

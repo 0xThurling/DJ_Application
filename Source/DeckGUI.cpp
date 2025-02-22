@@ -12,8 +12,8 @@
 #include "DeckGUI.h"
 
 //==============================================================================
-DeckGUI::DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager, juce::AudioThumbnailCache& cache)
-                : djAudioPlayer(_player), waveformDisplay(formatManager, cache)
+DeckGUI::DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager, juce::AudioThumbnailCache& cache, std::string _deckname)
+: djAudioPlayer(_player), waveformDisplay(formatManager, cache), deck_name(_deckname), deckDisplay(formatManager, cache)
 {
     auto customLookAndFeel = std::make_unique<CustomLookAndFeel>(0.6f);
     
@@ -32,6 +32,9 @@ DeckGUI::DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager
     
     imageFile = appDir.getChildFile("Resources/stop.png");
     stop_image = juce::ImageCache::getFromFile(imageFile);
+    
+    imageFile = appDir.getChildFile("Resources/overlay.png");
+    deck_overlay = juce::ImageCache::getFromFile(imageFile);
     
     imageFile = appDir.getChildFile("Resources/play.png");
     play_image = juce::ImageCache::getFromFile(imageFile);
@@ -57,6 +60,9 @@ DeckGUI::DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager
 
     // Make the button visible in your component
     addAndMakeVisible(stopImageButton.get());
+    
+    imageFile = appDir.getChildFile("Resources/" + deck_name + ".png");
+    deck_number_image = juce::ImageCache::getFromFile(imageFile);
     
     speedSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
     
@@ -92,6 +98,7 @@ DeckGUI::DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager
     addAndMakeVisible(reverb);
     addAndMakeVisible(flanger);
     addAndMakeVisible(cut);
+    addAndMakeVisible(deckDisplay);
     
     loadButton.addListener(this);
     volumeSlider.addListener(this);
@@ -154,8 +161,12 @@ void DeckGUI::paint (juce::Graphics& g)
 
         // Draw the transformed image.
         g.drawImage(backgroundImage, getLocalBounds().toFloat(), juce::RectanglePlacement::stretchToFit);
+        g.drawImage(deck_number_image, (getWidth()/8) * 6, (getHeight()/8) + 20,
+                    deck_number_image.getWidth()/3, deck_number_image.getHeight()/3,
+                    0, 0, deck_number_image.getWidth(), deck_number_image.getHeight());
         g.drawImageTransformed(deckImage, transform);
         g.drawImageTransformed(deck_face_image, deck_face_transform);
+        deckDisplay.setBounds(getWidth()/2 - 100, (getHeight()/8) * 4 - 50, 200, getHeight()/8);
     }
     
     if (!play)
@@ -177,22 +188,21 @@ void DeckGUI::resized()
     float rowH = getHeight()/8;
     
     // Speed slider
-    speedSlider.setBounds((getWidth()/8) * 7, rowH * 4, (getWidth()/8), rowH * 3);
+    speedSlider.setBounds((getWidth()/8) * 7, rowH * 4, (getWidth()/8), rowH * 4);
     
     // Effects sliders
-    reverb.setBounds(0, rowH * 6, (getWidth()/8) * 2, rowH);
-    flanger.setBounds((getWidth()/8) * 2, rowH * 6, (getWidth()/8) * 2, rowH);
-    cut.setBounds((getWidth()/8) * 4, rowH * 6, (getWidth()/8) * 2, rowH);
+    reverb.setBounds((getWidth()/8) * 2, rowH * 7 - 20, (getWidth()/8), rowH);
+    flanger.setBounds((getWidth()/8) * 4 - 20, rowH * 7 - 20, (getWidth()/8), rowH);
+    cut.setBounds((getWidth()/8) * 6 - 40, rowH * 7 - 20, (getWidth()/8), rowH);
     
     waveformDisplay.setBounds(0, 0, getWidth(), rowH);
     
-    playImageButton->setBounds(10, rowH * 3, play_image.getWidth(), play_image.getHeight());
-    stopImageButton->setBounds(10, rowH * 3, stop_image.getWidth(), stop_image.getHeight());
+    playImageButton->setBounds(10, rowH * 7 - 50, play_image.getWidth(), play_image.getHeight());
+    stopImageButton->setBounds(10, rowH * 7 - 50, stop_image.getWidth(), stop_image.getHeight());
 }
 
 void DeckGUI::buttonClicked(juce::Button* button) {
     if (button == playImageButton.get()) {
-        djAudioPlayer->setPosition(0);
         djAudioPlayer->start();
         play = true;
     }
@@ -283,6 +293,7 @@ void DeckGUI::timerCallback()
 {
     //std::cout << "DeckGUI::timerCallback" << std::endl;
     waveformDisplay.setPositionRelative(djAudioPlayer->getPositionRelative());
+    deckDisplay.setPositionRelative(djAudioPlayer->getPositionRelative());
     
     if (play) {
         rotationAngle += 0.02f;
@@ -298,4 +309,5 @@ void DeckGUI::timerCallback()
 void DeckGUI::loadUrl(juce::URL fileURL) {
     djAudioPlayer->loadURL(fileURL);
     waveformDisplay.loadUrl(fileURL);
+    deckDisplay.loadUrl(fileURL);
 }
