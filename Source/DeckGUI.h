@@ -65,6 +65,11 @@ private:
     juce::Slider flanger;
     juce::Slider cut;
     
+    juce::Label reverbLabel;
+    juce::Label flangerLabel;
+    juce::Label lfoLabel;
+    juce::Label speedLabel;
+    
     juce::Image deckImage;
     juce::Image knobImage;
     juce::Image backgroundImage;

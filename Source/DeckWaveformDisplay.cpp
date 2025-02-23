@@ -56,7 +56,7 @@ void DeckWaveformDisplay::paint (juce::Graphics& g)
       audioThumbnail.drawChannel(g,
                                  getLocalBounds(),
                                  audioThumbnail.getTotalLength() * position,
-                                 audioThumbnail.getTotalLength() * position + 1,
+                                 audioThumbnail.getTotalLength() * position + .5,
                                  0,
                                  1.0f
       );

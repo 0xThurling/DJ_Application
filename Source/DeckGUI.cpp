@@ -76,9 +76,30 @@ DeckGUI::DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager
     flanger.setLookAndFeel(customLookAndFeel.get());
     cut.setLookAndFeel(customLookAndFeel.get());
     
+    // Labels
+    reverbLabel.setText("Reverb", juce::dontSendNotification);
+    reverbLabel.setFont(juce::Font("Helvetica", 14.0f, juce::Font::plain));
+    reverbLabel.attachToComponent(&reverb, false);
+    reverbLabel.setColour(juce::Label::textColourId, juce::Colour {50,50,50});
+    
+    flangerLabel.setText("Flanger", juce::dontSendNotification);
+    flangerLabel.setFont(juce::Font("Helvetica", 14.0f, juce::Font::plain));
+    flangerLabel.attachToComponent(&flanger, false);
+    flangerLabel.setColour(juce::Label::textColourId, juce::Colour {50,50,50});
+    
+    lfoLabel.setText("LFO Modulation", juce::dontSendNotification);
+    lfoLabel.setFont(juce::Font("Helvetica", 14.0f, juce::Font::plain));
+    lfoLabel.attachToComponent(&cut, false);
+    lfoLabel.setColour(juce::Label::textColourId, juce::Colour {50,50,50});
+    
+    speedLabel.setText("Speed", juce::dontSendNotification);
+    speedLabel.setFont(juce::Font("Helvetica", 14.0f, juce::Font::plain));
+    speedLabel.attachToComponent(&speedSlider, false);
+    speedLabel.setColour(juce::Label::textColourId, juce::Colour {50,50,50});
+    
     volumeSlider.setRange(0, 1);
     positionSlider.setRange(0, 1);
-    speedSlider.setRange(0, 2);
+    speedSlider.setRange(0.1, 2);
     
     reverb.setRange(0, 1);
     flanger.setRange(0, 1);
@@ -189,11 +210,17 @@ void DeckGUI::resized()
     
     // Speed slider
     speedSlider.setBounds((getWidth()/8) * 7, rowH * 4, (getWidth()/8), rowH * 4);
+    speedLabel.setBounds(speedSlider.getX() + 15, speedSlider.getY() - 20, 200, 20);
     
     // Effects sliders
     reverb.setBounds((getWidth()/8) * 2, rowH * 7 - 20, (getWidth()/8), rowH);
+    reverbLabel.setBounds(reverb.getX() + 10, reverb.getY() + 90, 200, 20);
+    
     flanger.setBounds((getWidth()/8) * 4 - 20, rowH * 7 - 20, (getWidth()/8), rowH);
+    flangerLabel.setBounds(flanger.getX() + 18, flanger.getY() + 90, 200, 20);
+    
     cut.setBounds((getWidth()/8) * 6 - 40, rowH * 7 - 20, (getWidth()/8), rowH);
+    lfoLabel.setBounds(cut.getX() - 10, cut.getY() + 90, 200, 20);
     
     waveformDisplay.setBounds(0, 0, getWidth(), rowH);
     

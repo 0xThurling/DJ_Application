@@ -39,13 +39,24 @@ private:
     juce::Slider volumeSliderA;
     juce::Slider volumeSliderB;
     
+    juce::Label volumeSliderALabel;
+    juce::Label volumeSliderBLabel;
+    
     juce::Slider trackAHighPassSlider;
     juce::Slider trackAMidPassSlider;
     juce::Slider trackALowPassSlider;
     
+    juce::Label trackAHighPassSliderLabel;
+    juce::Label trackAMidPassSliderLabel;
+    juce::Label trackALowPassSliderLabel;
+    
     juce::Slider trackBHighPassSlider;
     juce::Slider trackBMidPassSlider;
     juce::Slider trackBLowPassSlider;
+    
+    juce::Label trackBHighPassSliderLabel;
+    juce::Label trackBMidPassSliderLabel;
+    juce::Label trackBLowPassSliderLabel;
     
     juce::Image backgroundImage;
     
