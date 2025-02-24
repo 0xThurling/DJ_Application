@@ -6,6 +6,7 @@
 #include "DeckGUI.h"
 #include "Playlist.h"
 #include "MixerView.h"
+#include "CSVReader.h"
 
 //==============================================================================
 /*
@@ -31,6 +32,8 @@ class MainComponent  : public juce::AudioAppComponent
     //==============================================================================
     juce::AudioFormatManager formatManager;
     juce::AudioThumbnailCache thumbnailCache {20};
+    
+    CSVReader reader;
     
     DJAudioPlayer player1;
     DeckGUI deck1 {&player1, formatManager, thumbnailCache, "deck_a"};

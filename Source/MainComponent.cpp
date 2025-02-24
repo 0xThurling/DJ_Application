@@ -20,6 +20,7 @@ MainComponent::MainComponent()
         setAudioChannels (1, 1);
     }
     
+    reader.readCSV();
     
     addAndMakeVisible(deck1);
     addAndMakeVisible(deck2);

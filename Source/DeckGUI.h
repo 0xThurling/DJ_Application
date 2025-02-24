@@ -15,6 +15,7 @@
 #include "WaveformDisplay.h"
 #include "CustomLookAndFeel.h"
 #include "DeckWaveformDisplay.h"
+#include "CSVReader.h"
 
 //==============================================================================
 /*
@@ -44,6 +45,7 @@ class DeckGUI  : public juce::Component, public juce::Button::Listener, public j
     std::vector<std::unique_ptr<juce::LookAndFeel>> lookAndFeels;
     
     std::string deck_name;
+//    CSVReader* reader;
     
     float rotationAngle = 0.0f;
     float startAngle = 0.0f;

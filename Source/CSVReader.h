@@ -22,7 +22,7 @@ public:
     
     static std::vector<std::string> tokenise(std::string csvLine, char separator);
     
-    void CSVReader::readCSV(std::string csvFilename);
+    std::vector<std::string> readCSV();
 private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (CSVReader)
 };
