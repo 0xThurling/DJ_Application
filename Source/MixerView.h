@@ -58,7 +58,7 @@ class MixerView  : public juce::Component, public juce::Slider::Listener
     juce::Label trackBMidPassSliderLabel;
     juce::Label trackBLowPassSliderLabel;
     
-    juce::Image backgroundImage;
+    juce::Image otodecksImage;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MixerView)
 };

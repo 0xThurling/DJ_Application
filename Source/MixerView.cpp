@@ -145,9 +145,8 @@ MixerView::MixerView(DJAudioPlayer* _player1, DJAudioPlayer* _player2) : djAudio
     
     juce::File appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
     
-    juce::File imageFile = appDir.getChildFile("Resources/background_info.png");
-    backgroundImage = juce::ImageCache::getFromFile(imageFile);
-    
+    juce::File imageFile = appDir.getChildFile("Resources/otodecks.png");
+    otodecksImage = juce::ImageCache::getFromFile(imageFile);
 }
 
 MixerView::~MixerView()
@@ -165,7 +164,10 @@ void MixerView::paint (juce::Graphics& g)
     
     g.fillAll (juce::Colour {233, 233, 233});
     
-    g.drawRect (getLocalBounds(), 1);   // draw an outline around the component
+    g.drawImage(otodecksImage, (getWidth()/2) - ((otodecksImage.getWidth()/3)/2), 20,
+                otodecksImage.getWidth()/3, otodecksImage.getHeight()/3,
+                0, 0, otodecksImage.getWidth(), otodecksImage.getHeight());
+    
 }
 
 void MixerView::resized()
