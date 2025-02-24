@@ -1,12 +1,12 @@
 /*
-  ==============================================================================
-
-    MixerView.cpp
-    Created: 5 Feb 2025 5:14:06pm
-    Author:  Jacques Thurling
-
-  ==============================================================================
-*/
+ ==============================================================================
+ 
+ MixerView.cpp
+ Created: 5 Feb 2025 5:14:06pm
+ Author:  Jacques Thurling
+ 
+ ==============================================================================
+ */
 
 #include <JuceHeader.h>
 #include "MixerView.h"
@@ -157,14 +157,14 @@ MixerView::~MixerView()
 void MixerView::paint (juce::Graphics& g)
 {
     /* This demo code just fills the component's background and
-       draws some placeholder text to get you started.
-
-       You should replace everything in this method with your own
-       drawing code..
-    */
-
+     draws some placeholder text to get you started.
+     
+     You should replace everything in this method with your own
+     drawing code..
+     */
+    
     g.fillAll (juce::Colour {233, 233, 233});
-
+    
     g.drawRect (getLocalBounds(), 1);   // draw an outline around the component
 }
 

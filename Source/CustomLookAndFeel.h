@@ -1,12 +1,12 @@
 /*
-  ==============================================================================
-
-    CustomLookAndFeel.h
-    Created: 17 Feb 2025 4:13:42pm
-    Author:  Jacques Thurling
-
-  ==============================================================================
-*/
+ ==============================================================================
+ 
+ CustomLookAndFeel.h
+ Created: 17 Feb 2025 4:13:42pm
+ Author:  Jacques Thurling
+ 
+ ==============================================================================
+ */
 
 #pragma once
 
@@ -14,13 +14,13 @@
 
 //==============================================================================
 /*
-*/
+ */
 class CustomLookAndFeel  : public juce::LookAndFeel_V4
 {
-public:
+    public:
     CustomLookAndFeel(float scaleFactor);
     ~CustomLookAndFeel() override;
-
+    
     void drawRotarySlider(juce::Graphics& g, int x, int y, int width, int height, float sliderPosProportional, float rotaryStartAngle, float rotaryEndAngle, juce::Slider& slider) override;
     
     void drawLinearSlider(juce::Graphics& g,
@@ -33,7 +33,7 @@ public:
                           float maxSliderPos,
                           juce::Slider::SliderStyle style,
                           juce::Slider& slider) override;
-private:
+    private:
     juce::Image knobImage;
     juce::Image sliderImage;
     juce::Image thumbImage;

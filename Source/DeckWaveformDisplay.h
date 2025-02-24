@@ -1,12 +1,12 @@
 /*
-  ==============================================================================
-
-    DeckWaveformDisplay.h
-    Created: 22 Feb 2025 1:38:07pm
-    Author:  Jacques Thurling
-
-  ==============================================================================
-*/
+ ==============================================================================
+ 
+ DeckWaveformDisplay.h
+ Created: 22 Feb 2025 1:38:07pm
+ Author:  Jacques Thurling
+ 
+ ==============================================================================
+ */
 
 #pragma once
 
@@ -14,27 +14,27 @@
 
 //==============================================================================
 /*
-*/
+ */
 class DeckWaveformDisplay  : public juce::Component, public juce::ChangeListener
 {
-public:
+    public:
     DeckWaveformDisplay(juce::AudioFormatManager& formatManagerToUse,
                         juce::AudioThumbnailCache& cache);
     
     DeckWaveformDisplay();
     
     ~DeckWaveformDisplay() override;
-
+    
     void paint (juce::Graphics&) override;
     void resized() override;
-
+    
     void changeListenerCallback (juce::ChangeBroadcaster *source) override;
     
     void loadUrl(juce::URL url);
     
     /** set the relative position of the playhead*/
     void setPositionRelative(double pos);
-private:
+    private:
     juce::AudioThumbnail audioThumbnail;
     
     bool fileLoaded;

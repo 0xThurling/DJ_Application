@@ -1,12 +1,12 @@
 /*
-  ==============================================================================
-
-    WaveformDisplay.h
-    Created: 30 Jan 2025 6:39:29pm
-    Author:  Jacques Thurling
-
-  ==============================================================================
-*/
+ ==============================================================================
+ 
+ WaveformDisplay.h
+ Created: 30 Jan 2025 6:39:29pm
+ Author:  Jacques Thurling
+ 
+ ==============================================================================
+ */
 
 #pragma once
 
@@ -14,23 +14,23 @@
 
 //==============================================================================
 /*
-*/
+ */
 class WaveformDisplay  : public juce::Component, public juce::ChangeListener
 {
-public:
+    public:
     WaveformDisplay(juce::AudioFormatManager& formatManagerToUse, juce::AudioThumbnailCache& cacheToUse);
     ~WaveformDisplay() override;
     
     void paint (juce::Graphics&) override;
     void resized() override;
-
+    
     void changeListenerCallback (juce::ChangeBroadcaster *source) override;
     
     void loadUrl(juce::URL url);
     
     /** set the relative position of the playhead*/
     void setPositionRelative(double pos);
-private:
+    private:
     juce::AudioThumbnail audioThumbnail;
     
     bool fileLoaded;

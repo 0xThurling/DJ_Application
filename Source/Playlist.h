@@ -1,12 +1,12 @@
 /*
-  ==============================================================================
-
-    Playlist.h
-    Created: 4 Feb 2025 6:12:32pm
-    Author:  Jacques Thurling
-
-  ==============================================================================
-*/
+ ==============================================================================
+ 
+ Playlist.h
+ Created: 4 Feb 2025 6:12:32pm
+ Author:  Jacques Thurling
+ 
+ ==============================================================================
+ */
 
 #pragma once
 
@@ -16,7 +16,7 @@
 
 //==============================================================================
 /*
-*/
+ */
 struct PlaylistFileInformation {
     juce::File file;
     juce::URL fileUrl;
@@ -24,13 +24,13 @@ struct PlaylistFileInformation {
 
 class Playlist  : public juce::Component, public juce::TableListBoxModel, public juce::Button::Listener, public juce::FileDragAndDropTarget
 {
-public:
+    public:
     Playlist(juce::AudioFormatManager& formatManager, juce::AudioThumbnailCache& cache, DeckGUI& deck1, DeckGUI& deck2);
     ~Playlist() override;
-
+    
     void paint (juce::Graphics&) override;
     void resized() override;
-
+    
     int getNumRows() override;
     
     void paintRowBackground(juce::Graphics&, int rowNumber, int width, int height, bool rowIsSelected) override;
@@ -45,7 +45,7 @@ public:
     void filesDropped (const juce::StringArray& file, int x, int y) override;
     
     void buttonClicked(juce::Button* button) override;
-private:
+    private:
     juce::AudioThumbnailCache& audioThumbnail;
     juce::AudioFormatManager& audioFormatManager;
     
@@ -53,7 +53,7 @@ private:
     DeckGUI& deck2;
     
     juce::TableListBox tableComponent;
-
+    
     std::vector<PlaylistFileInformation> playlistFiles;
     
     std::vector<std::string> split(const std::string &s, char delimiter);

@@ -1,12 +1,12 @@
 /*
-  ==============================================================================
-
-    MixerView.h
-    Created: 5 Feb 2025 5:14:06pm
-    Author:  Jacques Thurling
-
-  ==============================================================================
-*/
+ ==============================================================================
+ 
+ MixerView.h
+ Created: 5 Feb 2025 5:14:06pm
+ Author:  Jacques Thurling
+ 
+ ==============================================================================
+ */
 
 #pragma once
 
@@ -16,18 +16,18 @@
 
 //==============================================================================
 /*
-*/
+ */
 class MixerView  : public juce::Component, public juce::Slider::Listener
 {
-public:
+    public:
     MixerView(DJAudioPlayer* _player1, DJAudioPlayer* _player2);
     ~MixerView() override;
-
+    
     void paint (juce::Graphics&) override;
     void resized() override;
     
     void sliderValueChanged(juce::Slider* slider) override;
-private:
+    private:
     std::vector<std::unique_ptr<juce::LookAndFeel>> lookAndFeels;
     
     DJAudioPlayer* djAudioPlayer1;

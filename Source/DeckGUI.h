@@ -1,12 +1,12 @@
 /*
-  ==============================================================================
-
-    DeckGUI.h
-    Created: 29 Jan 2025 7:21:23am
-    Author:  Jacques Thurling
-
-  ==============================================================================
-*/
+ ==============================================================================
+ 
+ DeckGUI.h
+ Created: 29 Jan 2025 7:21:23am
+ Author:  Jacques Thurling
+ 
+ ==============================================================================
+ */
 
 #pragma once
 
@@ -18,16 +18,16 @@
 
 //==============================================================================
 /*
-*/
+ */
 class DeckGUI  : public juce::Component, public juce::Button::Listener, public juce::Slider::Listener, public juce::FileDragAndDropTarget, public juce::Timer
 {
-public:
+    public:
     DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager, juce::AudioThumbnailCache& cache, std::string deck_name);
     ~DeckGUI() override;
-
+    
     void paint (juce::Graphics&) override;
     void resized() override;
-
+    
     void buttonClicked(juce::Button* button) override;
     void sliderValueChanged(juce::Slider* slider) override;
     
@@ -40,7 +40,7 @@ public:
     void mouseDrag(const juce::MouseEvent& event) override;
     
     void loadUrl(juce::URL file);
-private:
+    private:
     std::vector<std::unique_ptr<juce::LookAndFeel>> lookAndFeels;
     
     std::string deck_name;

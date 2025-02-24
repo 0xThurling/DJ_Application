@@ -1,12 +1,12 @@
 /*
-  ==============================================================================
-
-    DJAudioPlayer.h
-    Created: 28 Jan 2025 7:31:34pm
-    Author:  Jacques Thurling
-
-  ==============================================================================
-*/
+ ==============================================================================
+ 
+ DJAudioPlayer.h
+ Created: 28 Jan 2025 7:31:34pm
+ Author:  Jacques Thurling
+ 
+ ==============================================================================
+ */
 
 #pragma once
 
@@ -55,7 +55,7 @@ class DJAudioPlayer : public juce::AudioSource {
     void prepareToPlay (int samplesPerBlockExpected, double sampleRate) override;
     void getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill) override;
     void releaseResources() override;
-
+    
     void loadURL(juce::URL audioURL);
     void setGain(double gain);
     void setSpeed(double ratio);
@@ -67,7 +67,7 @@ class DJAudioPlayer : public juce::AudioSource {
     void setReverbAmount(double amount);
     void setFlangerAmount(double amount);
     void setTremelo(double amount);
-
+    
     void start();
     void stop();
     

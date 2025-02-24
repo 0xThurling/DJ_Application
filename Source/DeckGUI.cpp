@@ -1,12 +1,12 @@
 /*
-  ==============================================================================
-
-    DeckGUI.cpp
-    Created: 29 Jan 2025 7:21:23am
-    Author:  Jacques Thurling
-
-  ==============================================================================
-*/
+ ==============================================================================
+ 
+ DeckGUI.cpp
+ Created: 29 Jan 2025 7:21:23am
+ Author:  Jacques Thurling
+ 
+ ==============================================================================
+ */
 
 #include <JuceHeader.h>
 #include "DeckGUI.h"
@@ -38,7 +38,7 @@ DeckGUI::DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager
     
     imageFile = appDir.getChildFile("Resources/play.png");
     play_image = juce::ImageCache::getFromFile(imageFile);
-        
+    
     playImageButton = std::make_unique<juce::ImageButton>("playImageButton");
     
     // Set images for the button states: normal, over, and down.
@@ -46,7 +46,7 @@ DeckGUI::DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager
                                play_image, 1.0f, juce::Colours::transparentBlack,  // normal state image
                                play_image, 1.0f, juce::Colours::transparentBlack,  // over state image
                                play_image, 1.0f, juce::Colours::transparentBlack); // down state image
-
+    
     // Make the button visible in your component
     addAndMakeVisible(playImageButton.get());
     
@@ -57,7 +57,7 @@ DeckGUI::DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager
                                stop_image, 1.0f, juce::Colours::transparentBlack,  // normal state image
                                stop_image, 1.0f, juce::Colours::transparentBlack,  // over state image
                                stop_image, 1.0f, juce::Colours::transparentBlack); // down state image
-
+    
     // Make the button visible in your component
     addAndMakeVisible(stopImageButton.get());
     
@@ -110,7 +110,7 @@ DeckGUI::DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager
     loadButton.setButtonText("LOAD");
     
     speedSlider.setValue(1.0f);
-
+    
     addAndMakeVisible(loadButton);
     addAndMakeVisible(volumeSlider);
     addAndMakeVisible(positionSlider);
@@ -155,14 +155,14 @@ void DeckGUI::paint (juce::Graphics& g)
         auto bounds = getLocalBounds().toFloat();
         auto imageBounds = deckImage.getBounds().toFloat();
         auto faceBounds = deck_face_image.getBounds().toFloat();
-
+        
         // Calculate individual scale factors.
         float scaleX = bounds.getWidth() / (imageBounds.getWidth() * 2);
         float scaleY = bounds.getHeight() / (imageBounds.getHeight() * 2);
-
+        
         // Use the minimum scale factor to preserve the aspect ratio.
         float uniformScale = std::min(scaleX, scaleY);
-
+        
         // Optionally, translate the image such that it is centered.
         auto imageCentre = imageBounds.getCentre();
         auto boundsCentre = bounds.getCentre();
@@ -172,14 +172,14 @@ void DeckGUI::paint (juce::Graphics& g)
         // then apply the uniform scaling and rotation,
         // and finally translate it to the component's centre.
         auto transform = juce::AffineTransform::translation(-imageCentre.x, -imageCentre.y)
-                             .scaled(uniformScale)
-                             .rotated(rotationAngle)
-                             .translated(boundsCentre.x, boundsCentre.y);
+            .scaled(uniformScale)
+            .rotated(rotationAngle)
+            .translated(boundsCentre.x, boundsCentre.y);
         
         auto deck_face_transform = juce::AffineTransform::translation(-faceCentre.x, -faceCentre.y)
             .scaled(uniformScale)
             .translated(boundsCentre.x, boundsCentre.y);
-
+        
         // Draw the transformed image.
         g.drawImage(backgroundImage, getLocalBounds().toFloat(), juce::RectanglePlacement::stretchToFit);
         g.drawImage(deck_number_image, (getWidth()/8) * 6, (getHeight()/8) + 20,

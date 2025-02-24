@@ -1,19 +1,19 @@
 /*
-  ==============================================================================
-
-    Playlist.cpp
-    Created: 4 Feb 2025 6:12:32pm
-    Author:  Jacques Thurling
-
-  ==============================================================================
-*/
+ ==============================================================================
+ 
+ Playlist.cpp
+ Created: 4 Feb 2025 6:12:32pm
+ Author:  Jacques Thurling
+ 
+ ==============================================================================
+ */
 
 #include <JuceHeader.h>
 #include "Playlist.h"
 
 //==============================================================================
 Playlist::Playlist(juce::AudioFormatManager& formatManager, juce::AudioThumbnailCache& cache, DeckGUI& deck1, DeckGUI& deck2) :
-                                    audioThumbnail(cache), audioFormatManager(formatManager), deck1(deck1), deck2(deck2)
+audioThumbnail(cache), audioFormatManager(formatManager), deck1(deck1), deck2(deck2)
 {
     // In your constructor, you should add any child components, and
     // initialise any special settings that your component needs.
@@ -233,7 +233,7 @@ void Playlist::buttonClicked(juce::Button* button) {
     
     std::vector<std::string> temp = split(id, '-');
     
-//     Check if column three is selected
+    //     Check if column three is selected
     if (std::stoi(temp[1]) == 4) {
         deck1.loadUrl(playlistFiles[std::stoi(temp[0])].fileUrl);
     }
