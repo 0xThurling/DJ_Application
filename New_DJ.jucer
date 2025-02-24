@@ -4,6 +4,8 @@
               addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1">
   <MAINGROUP id="pA4PmO" name="New_DJ">
     <GROUP id="{40B34DC4-B036-33BF-064A-CD8F6C386099}" name="Source">
+      <FILE id="Aw4CRw" name="CSVReader.cpp" compile="1" resource="0" file="Source/CSVReader.cpp"/>
+      <FILE id="P6kLYj" name="CSVReader.h" compile="0" resource="0" file="Source/CSVReader.h"/>
       <FILE id="lAX9YU" name="DeckWaveformDisplay.cpp" compile="1" resource="0"
             file="Source/DeckWaveformDisplay.cpp"/>
       <FILE id="Ru8eeB" name="DeckWaveformDisplay.h" compile="0" resource="0"
