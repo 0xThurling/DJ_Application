@@ -12,8 +12,8 @@
 #include "DeckGUI.h"
 
 //==============================================================================
-DeckGUI::DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager, juce::AudioThumbnailCache& cache, std::string _deckname)
-: djAudioPlayer(_player), waveformDisplay(formatManager, cache), deck_name(_deckname), deckDisplay(formatManager, cache)
+DeckGUI::DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager, juce::AudioThumbnailCache& cache, std::string _deckname, DeckState& _state)
+: djAudioPlayer(_player), waveformDisplay(formatManager, cache), deck_name(_deckname), deckDisplay(formatManager, cache), state(_state)
 {
     auto customLookAndFeel = std::make_unique<CustomLookAndFeel>(0.6f);
     
@@ -337,4 +337,9 @@ void DeckGUI::loadUrl(juce::URL fileURL) {
     djAudioPlayer->loadURL(fileURL);
     waveformDisplay.loadUrl(fileURL);
     deckDisplay.loadUrl(fileURL);
+}
+
+void DeckGUI::setDeckState(std::string fileName, double newPosition) {
+    state.file_name = fileName;
+    state.position = newPosition;
 }

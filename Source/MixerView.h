@@ -13,6 +13,7 @@
 #include <JuceHeader.h>
 #include "DJAudioPlayer.h"
 #include "CustomLookAndFeel.h"
+#include "CSVReader.h"
 
 //==============================================================================
 /*

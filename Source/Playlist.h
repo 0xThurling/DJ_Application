@@ -25,7 +25,7 @@ struct PlaylistFileInformation {
 class Playlist  : public juce::Component, public juce::TableListBoxModel, public juce::Button::Listener, public juce::FileDragAndDropTarget
 {
     public:
-    Playlist(juce::AudioFormatManager& formatManager, juce::AudioThumbnailCache& cache, DeckGUI& deck1, DeckGUI& deck2);
+    Playlist(juce::AudioFormatManager& formatManager, juce::AudioThumbnailCache& cache, DeckGUI& deck1, DeckGUI& deck2, std::vector<DeckState> *_states);
     ~Playlist() override;
     
     void paint (juce::Graphics&) override;
@@ -45,9 +45,18 @@ class Playlist  : public juce::Component, public juce::TableListBoxModel, public
     void filesDropped (const juce::StringArray& file, int x, int y) override;
     
     void buttonClicked(juce::Button* button) override;
+    
+    void parentHierarchyChanged() override
+    {
+        setDeckStates();
+    }
+
+    void setDeckStates();
     private:
     juce::AudioThumbnailCache& audioThumbnail;
     juce::AudioFormatManager& audioFormatManager;
+    
+    std::vector<DeckState> *states;
     
     DeckGUI& deck1;
     DeckGUI& deck2;

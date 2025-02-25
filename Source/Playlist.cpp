@@ -12,8 +12,8 @@
 #include "Playlist.h"
 
 //==============================================================================
-Playlist::Playlist(juce::AudioFormatManager& formatManager, juce::AudioThumbnailCache& cache, DeckGUI& deck1, DeckGUI& deck2) :
-audioThumbnail(cache), audioFormatManager(formatManager), deck1(deck1), deck2(deck2)
+Playlist::Playlist(juce::AudioFormatManager& formatManager, juce::AudioThumbnailCache& cache, DeckGUI& deck1, DeckGUI& deck2, std::vector<DeckState> *_states) :
+audioThumbnail(cache), audioFormatManager(formatManager), deck1(deck1), deck2(deck2), states(_states)
 {
     // In your constructor, you should add any child components, and
     // initialise any special settings that your component needs.
@@ -284,4 +284,27 @@ std::vector<std::string> Playlist::split(const std::string &s, char delimiter) {
     if (!token.empty())
         tokens.push_back(token);
     return tokens;
+}
+
+void Playlist::setDeckStates() {
+    for (auto const &state : *states) {
+        
+        std::cout << state.deck_name << std::endl;
+        
+        if (state.deck_name == "deck_a") {
+            juce::File appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
+            juce::File file = appDir.getChildFile("Resources/" + state.file_name);
+            juce::URL fileUrl = juce::URL{file};
+            
+            deck1.loadUrl(fileUrl);
+        }
+        
+        if (state.deck_name == "deck_b") {
+            juce::File appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
+            juce::File file = appDir.getChildFile("Resources/" + state.file_name);
+            juce::URL fileUrl = juce::URL{file};
+            
+            deck2.loadUrl(fileUrl);
+        }
+    }
 }

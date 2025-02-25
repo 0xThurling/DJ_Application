@@ -245,3 +245,5 @@ void MixerView::sliderValueChanged(juce::Slider* slider) {
         djAudioPlayer2->setLowPassFilterAmount(1.0f - slider->getValue());
     }
 }
+
+

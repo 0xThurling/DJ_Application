@@ -34,16 +34,17 @@ class MainComponent  : public juce::AudioAppComponent
     juce::AudioThumbnailCache thumbnailCache {20};
     
     CSVReader reader;
+    std::vector<DeckState> states = reader.readCSV();
     
     DJAudioPlayer player1;
-    DeckGUI deck1 {&player1, formatManager, thumbnailCache, "deck_a"};
+    DeckGUI deck1 {&player1, formatManager, thumbnailCache, "deck_a", states[0]};
     
     DJAudioPlayer player2;
-    DeckGUI deck2 {&player2, formatManager, thumbnailCache, "deck_b"};
+    DeckGUI deck2 {&player2, formatManager, thumbnailCache, "deck_b", states[1]};
     
     MixerView mixerView{&player1, &player2};
     
-    Playlist playlistComponent {formatManager, thumbnailCache, deck1, deck2};
+    Playlist playlistComponent {formatManager, thumbnailCache, deck1, deck2, &states};
     
     juce::MixerAudioSource mixer;
     

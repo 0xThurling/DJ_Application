@@ -23,7 +23,7 @@
 class DeckGUI  : public juce::Component, public juce::Button::Listener, public juce::Slider::Listener, public juce::FileDragAndDropTarget, public juce::Timer
 {
     public:
-    DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager, juce::AudioThumbnailCache& cache, std::string deck_name);
+    DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager, juce::AudioThumbnailCache& cache, std::string deck_name, DeckState& state);
     ~DeckGUI() override;
     
     void paint (juce::Graphics&) override;
@@ -41,11 +41,12 @@ class DeckGUI  : public juce::Component, public juce::Button::Listener, public j
     void mouseDrag(const juce::MouseEvent& event) override;
     
     void loadUrl(juce::URL file);
+    void setDeckState(std::string fileName, double position);
     private:
     std::vector<std::unique_ptr<juce::LookAndFeel>> lookAndFeels;
     
     std::string deck_name;
-//    CSVReader* reader;
+    DeckState& state;
     
     float rotationAngle = 0.0f;
     float startAngle = 0.0f;

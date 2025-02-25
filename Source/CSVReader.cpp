@@ -20,7 +20,7 @@ CSVReader::CSVReader()
     
 }
 
-std::vector<std::string>  CSVReader::readCSV() {
+std::vector<DeckState>  CSVReader::readCSV() {
     // Open CSV file
     juce::File appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
     juce::File stateFile = appDir.getChildFile("Resources/dj_program_state.csv");
@@ -44,19 +44,31 @@ std::vector<std::string>  CSVReader::readCSV() {
     std::cout << " Loading file data" << std::endl;
     std::cout << "=====================" << std::endl;
     
+    std::vector<DeckState> deckStates;
+    
     // Check if the file is open
     if (csvFile.is_open()) {
         // Read each line of the file
         while (std::getline(csvFile, line)) {
             try {
                 // Tokenise the line and convert to WeatherEntry objects
-                return tokenise(line, ',');
+                std::vector<std::string> tokens = tokenise(line, ',');
+                
+                DeckState state {
+                    tokens[0],
+                    std::stod(tokens[1]),
+                    tokens[2]
+                };
+                
+                deckStates.push_back(state);
             } catch (const std::exception &e) {
                 // Log Message for bad data
                 std::cout << "CSVReader::readCSV bad data" << std::endl;
             }
         } // end of while
     }
+    
+    return deckStates;
 }
 
 std::vector<std::string> CSVReader::tokenise(std::string csvLine,
