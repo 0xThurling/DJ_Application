@@ -331,15 +331,23 @@ void DeckGUI::timerCallback()
         
         repaint();
     }
+    
+    setDeckState(djAudioPlayer->getPositionRelative());
 }
 
 void DeckGUI::loadUrl(juce::URL fileURL) {
     djAudioPlayer->loadURL(fileURL);
     waveformDisplay.loadUrl(fileURL);
     deckDisplay.loadUrl(fileURL);
+    
+    setDeckState(fileURL.getFileName().toStdString(), djAudioPlayer->getPositionRelative());
 }
 
 void DeckGUI::setDeckState(std::string fileName, double newPosition) {
     state.file_name = fileName;
+    state.position = newPosition;
+}
+
+void DeckGUI::setDeckState(double newPosition) {
     state.position = newPosition;
 }

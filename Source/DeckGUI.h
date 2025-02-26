@@ -41,7 +41,12 @@ class DeckGUI  : public juce::Component, public juce::Button::Listener, public j
     void mouseDrag(const juce::MouseEvent& event) override;
     
     void loadUrl(juce::URL file);
+    void setInitialPosition(double relativePosition);
+    
+    // Multiple methods
     void setDeckState(std::string fileName, double position);
+    void setDeckState(double position);
+    
     private:
     std::vector<std::unique_ptr<juce::LookAndFeel>> lookAndFeels;
     

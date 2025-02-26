@@ -54,6 +54,8 @@ std::vector<DeckState>  CSVReader::readCSV() {
                 // Tokenise the line and convert to WeatherEntry objects
                 std::vector<std::string> tokens = tokenise(line, ',');
                 
+                DBG("" << std::stod(tokens[1]));
+                
                 DeckState state {
                     tokens[0],
                     std::stod(tokens[1]),
@@ -67,6 +69,8 @@ std::vector<DeckState>  CSVReader::readCSV() {
             }
         } // end of while
     }
+    
+    csvFile.close();
     
     return deckStates;
 }

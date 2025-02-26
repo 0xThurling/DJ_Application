@@ -288,9 +288,6 @@ std::vector<std::string> Playlist::split(const std::string &s, char delimiter) {
 
 void Playlist::setDeckStates() {
     for (auto const &state : *states) {
-        
-        std::cout << state.deck_name << std::endl;
-        
         if (state.deck_name == "deck_a") {
             juce::File appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
             juce::File file = appDir.getChildFile("Resources/" + state.file_name);
