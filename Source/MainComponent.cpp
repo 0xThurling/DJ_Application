@@ -1,65 +1,66 @@
+/**
+ * @file MainComponent.cpp
+ * @brief Implementation of the MainComponent class.
+ *
+ * This component sets up the main window of the application, initializes
+ * audio settings, and arranges the child components.
+ */
+
 #include "MainComponent.h"
 
-/*
-    MainComponent.cpp
-
-    This file implements the main component of the application.
-    It is responsible for:
-      - Setting up the application's main window size.
-      - Configuring audio input/output settings.
-      - Adding and arranging the primary child components: two decks, a mixer view, and a playlist.
-
-    The code uses JUCE's framework for handling audio and GUI components.
-*/
-
-//==============================================================================
-// Constructor: Initializes the main component.
+/**
+ * @brief Constructs a MainComponent object.
+ *
+ * Sets the window size, handles audio permission requests,
+ * configures audio channels, and adds the child components to the main window.
+ */
 MainComponent::MainComponent()
 {
-    // Set the size of the main window to 1920x1080 pixels.
-    // It is important to set the window size after the child components are added for proper layout.
+    // Set the size of the main component (width: 1920, height: 1080 pixels).
     setSize (1920, 1080);
     
-    // Check if the platform requires permission to record audio.
-    // If recording permission is required but not yet granted, request permission.
-    // Depending on the permission status, set the audio channels accordingly.
+    // Check if runtime permission is required for recording audio.
+    // If required but not yet granted, request permission and set audio channels based on the result.
     if (juce::RuntimePermissions::isRequired (juce::RuntimePermissions::recordAudio)
         && !juce::RuntimePermissions::isGranted (juce::RuntimePermissions::recordAudio))
     {
-        // Request audio recording permission. If granted, open 2 input channels; otherwise, open 0.
         juce::RuntimePermissions::request (juce::RuntimePermissions::recordAudio,
                                            [&] (bool granted) { setAudioChannels (granted ? 2 : 0, 2); });
     }
     else
     {
-        // If no permission is required or it is already granted, initialize with 1 input and 1 output channel.
+        // If permission is not required or is already granted, initialize with 1 input and 1 output channel.
         setAudioChannels (1, 1);
     }
     
-    // Add the child components to the main component and make them visible.
+    // Add child components and make them visible.
     addAndMakeVisible(deck1);
     addAndMakeVisible(deck2);
     addAndMakeVisible(mixerView);
     addAndMakeVisible(playlistComponent);
 }
 
-//==============================================================================
-// Destructor: Cleans up resources when the main component is destroyed.
+/**
+ * @brief Destructor for MainComponent.
+ *
+ * Shuts down the audio device and releases audio resources.
+ */
 MainComponent::~MainComponent()
 {
-    // Shutdown the audio device and release any associated audio sources.
     shutdownAudio();
 }
 
-//==============================================================================
-// prepareToPlay: Prepares audio sources for playback.
-// Parameters:
-//    samplesPerBlockExpected - Expected number of samples per audio block.
-//    sampleRate - The audio sample rate.
+/**
+ * @brief Prepares the audio system for playback.
+ *
+ * Called before playback starts to configure the audio mixer with expected settings.
+ *
+ * @param samplesPerBlockExpected The expected number of samples per audio block.
+ * @param sampleRate The audio sample rate.
+ */
 void MainComponent::prepareToPlay (int samplesPerBlockExpected, double sampleRate)
 {
-    // Add two audio players (player1 and player2) as inputs to the mixer.
-    // The 'false' parameter indicates that the mixer does not take ownership of these sources.
+    // Add two audio players as input sources for the mixer.
     mixer.addInputSource(&player1, false);
     mixer.addInputSource(&player2, false);
     
@@ -67,68 +68,60 @@ void MainComponent::prepareToPlay (int samplesPerBlockExpected, double sampleRat
     mixer.prepareToPlay(samplesPerBlockExpected, sampleRate);
 }
 
-//==============================================================================
-// getNextAudioBlock: Fetches the next block of audio data to be played.
-// Parameter:
-//    bufferToFill - Structure containing the audio buffer to be filled.
+/**
+ * @brief Provides the next block of audio data.
+ *
+ * Delegates the task of filling the audio buffer to the mixer.
+ *
+ * @param bufferToFill Structure containing the audio buffer to be filled.
+ */
 void MainComponent::getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill)
 {
-    // Pass the task of filling the audio buffer to the mixer.
     mixer.getNextAudioBlock(bufferToFill);
 }
 
-//==============================================================================
-// releaseResources: Releases any allocated audio resources.
-// This is typically called when audio playback is stopped or the audio device is closed.
+/**
+ * @brief Releases audio resources.
+ *
+ * Removes all inputs from the mixer and releases resources for the mixer and audio players.
+ */
 void MainComponent::releaseResources()
 {
-    // Remove all input sources from the mixer.
     mixer.removeAllInputs();
-    
-    // Release resources for the mixer and both audio players.
     mixer.releaseResources();
     player1.releaseResources();
     player2.releaseResources();
 }
 
-//==============================================================================
-// paint: Handles the drawing of the component.
-// Parameter:
-//    g - The graphics context used for rendering.
+/**
+ * @brief Renders the component.
+ *
+ * Fills the background with a solid grey color and serves as a placeholder for any additional drawing code.
+ *
+ * @param g The graphics context used for drawing.
+ */
 void MainComponent::paint (juce::Graphics& g)
 {
-    // Since the component is opaque, fill the entire background with a grey color.
     g.fillAll (juce::Colours::grey);
-    
-    // Additional custom drawing code can be added here if needed.
+    // Additional drawing code can be added here if needed.
 }
 
-//==============================================================================
-// resized: Called when the main component is resized.
-// This method positions and resizes all child components based on the new dimensions.
+/**
+ * @brief Handles component resizing.
+ *
+ * Adjusts the positions and sizes of all child components when the main component is resized.
+ */
 void MainComponent::resized()
 {
-    // Set the bounds for deck1:
-    // - Positioned at the top-left corner.
-    // - Width: 3/8 of the total component width.
-    // - Height: 4/5 of the total component height.
+    // Set bounds for deck1: positioned at the left.
     deck1.setBounds(0, 0, (getWidth() / 8) * 3, (getHeight() / 5) * 4);
     
-    // Set the bounds for deck2:
-    // - Positioned at the top-right corner.
-    // - Width: 3/8 of the total component width.
-    // - Height: 4/5 of the total component height.
+    // Set bounds for deck2: positioned at the right.
     deck2.setBounds((getWidth() / 8) * 5, 0, (getWidth() / 8) * 3, (getHeight() / 5) * 4);
     
-    // Set the bounds for mixerView:
-    // - Positioned in the center between deck1 and deck2.
-    // - Width: 2/8 (or 1/4) of the total component width.
-    // - Height: 4/5 of the total component height.
+    // Set bounds for mixerView: positioned in the center.
     mixerView.setBounds((getWidth() / 8) * 3, 0, (getWidth() / 8) * 2, (getHeight() / 5) * 4);
     
-    // Set the bounds for playlistComponent:
-    // - Positioned at the bottom of the window.
-    // - Spanning the full width of the component.
-    // - Height: 1/5 of the total component height.
+    // Set bounds for playlistComponent: positioned at the bottom.
     playlistComponent.setBounds(0, (getHeight() / 5) * 4, getWidth(), (getHeight() / 5) * 1);
 }
