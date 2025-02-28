@@ -12,6 +12,14 @@
 #include "DeckGUI.h"
 
 //==============================================================================
+/**
+ * @brief Constructor for DeckGUI.
+ * @param _player Pointer to the DJAudioPlayer handling playback.
+ * @param formatManager Reference to an AudioFormatManager for handling formats.
+ * @param cache Reference to an AudioThumbnailCache for caching waveform thumbnails.
+ * @param _deckname Name of the deck.
+ * @param _state Reference to the DeckState for storing deck information.
+ */
 DeckGUI::DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager, juce::AudioThumbnailCache& cache, std::string _deckname, DeckState& _state)
 : djAudioPlayer(_player), waveformDisplay(formatManager, cache), deck_name(_deckname), deckDisplay(formatManager, cache), state(_state)
 {
@@ -143,10 +151,17 @@ DeckGUI::DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager
     lookAndFeels.emplace_back(std::move(customLookAndFeel));
 }
 
+/**
+ * @brief Destructor for DeckGUI.
+ */
 DeckGUI::~DeckGUI()
 {
 }
 
+/**
+ * @brief Renders the deck GUI components.
+ * @param g JUCE Graphics context.
+ */
 void DeckGUI::paint (juce::Graphics& g)
 {
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));   // clear the background
@@ -202,6 +217,9 @@ void DeckGUI::paint (juce::Graphics& g)
     }
 }
 
+/**
+ * @brief Resizes and positions the components within the DeckGUI.
+ */
 void DeckGUI::resized()
 {
     // This method is where you should set the bounds of any child
@@ -228,6 +246,10 @@ void DeckGUI::resized()
     stopImageButton->setBounds(10, rowH * 7 - 50, stop_image.getWidth(), stop_image.getHeight());
 }
 
+/**
+ * @brief Handles button clicks for playback and loading.
+ * @param button Pointer to the button that was clicked.
+ */
 void DeckGUI::buttonClicked(juce::Button* button) {
     if (button == playImageButton.get()) {
         djAudioPlayer->start();
@@ -251,6 +273,10 @@ void DeckGUI::buttonClicked(juce::Button* button) {
     }
 }
 
+/**
+ * @brief Handles slider value changes.
+ * @param slider Pointer to the slider that was changed.
+ */
 void DeckGUI::sliderValueChanged(juce::Slider* slider) {
     if (slider == &volumeSlider) {
         DBG("DeckGUI::sliderValueChanged : Gain slider value changed: " << volumeSlider.getValue());
@@ -278,11 +304,23 @@ void DeckGUI::sliderValueChanged(juce::Slider* slider) {
     }
 }
 
+/**
+ * @brief Determines if the playlist accepts dragged files.
+ *
+ * @param files List of dragged file paths.
+ * @return Always returns true.
+ */
 bool DeckGUI::isInterestedInFileDrag(const juce::StringArray& files) {
     std::cout << "DeckGUI::isInterestedInFileDrag" << std::endl;
     return true;
 }
 
+/**
+ * @brief Handles drag-and-drop file loading.
+ * @param files Array of file paths.
+ * @param x X coordinate of the drop location.
+ * @param y Y coordinate of the drop location.
+ */
 void DeckGUI::filesDropped(const juce::StringArray& files, int x, int y) {
     for (juce::String file : files) {
         juce::URL fileUrl = juce::URL{juce::File{file}};
@@ -316,6 +354,9 @@ void DeckGUI::mouseDrag(const juce::MouseEvent& event) {
     repaint();
 }
 
+/**
+ * @brief Timer callback function that updates the deck display.
+ */
 void DeckGUI::timerCallback()
 {
     //std::cout << "DeckGUI::timerCallback" << std::endl;
