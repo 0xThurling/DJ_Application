@@ -11,12 +11,19 @@
 #include <JuceHeader.h>
 #include "CustomLookAndFeel.h"
 
+/**
+ * @class CustomLookAndFeel
+ * @brief A custom LookAndFeel class for JUCE components.
+ */
+
 //==============================================================================
+/**
+ * @brief Constructor for CustomLookAndFeel.
+ * @param _scaleFactor Scaling factor for UI elements.
+ */
 CustomLookAndFeel::CustomLookAndFeel(float _scaleFactor) : scaleFactor(_scaleFactor)
 {
-    // In your constructor, you should add any child components, and
-    // initialise any special settings that your component needs.
-    
+    // Initialize image resources
     juce::File appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
     
     juce::File imageFile = appDir.getChildFile("Resources/knob.png");
@@ -28,21 +35,32 @@ CustomLookAndFeel::CustomLookAndFeel(float _scaleFactor) : scaleFactor(_scaleFac
     thumbImage = juce::ImageCache::getFromFile(imageFile);
 }
 
+/**
+ * @brief Destructor for CustomLookAndFeel.
+ */
 CustomLookAndFeel::~CustomLookAndFeel()
 {
 }
 
+/**
+ * @brief Draws a rotary slider using a custom knob image.
+ * @param g Graphics context to draw into.
+ * @param x X position of the slider.
+ * @param y Y position of the slider.
+ * @param width Width of the slider.
+ * @param height Height of the slider.
+ * @param sliderPosProportional Normalized slider position (0.0 - 1.0).
+ * @param rotaryStartAngle Starting angle of the rotary control.
+ * @param rotaryEndAngle Ending angle of the rotary control.
+ * @param slider Reference to the JUCE Slider component.
+ */
 void CustomLookAndFeel::drawRotarySlider(juce::Graphics& g, int x, int y, int width, int height, float sliderPosProportional,
                                          float rotaryStartAngle, float rotaryEndAngle, juce::Slider& slider) {
-    // Calculate the rotation angle based on the slider position
     const float rotation = rotaryStartAngle + sliderPosProportional * (rotaryEndAngle - rotaryStartAngle);
-    
-    // Define the center and radius of the knob
     const float centerX = x + width * 0.5f;
     const float centerY = y + height * 0.5f;
     const float radius = std::min(width, height) * 0.5f;
     
-    // Draw the knob image rotated around its center
     if (knobImage.isValid()) {
         juce::AffineTransform transform = juce::AffineTransform::translation(-knobImage.getWidth() * 0.5f, -knobImage.getHeight() * 0.5f)
             .scaled(scaleFactor, scaleFactor)
@@ -53,6 +71,19 @@ void CustomLookAndFeel::drawRotarySlider(juce::Graphics& g, int x, int y, int wi
     }
 }
 
+/**
+ * @brief Draws a linear slider with a custom thumb image.
+ * @param g Graphics context to draw into.
+ * @param x X position of the slider.
+ * @param y Y position of the slider.
+ * @param width Width of the slider.
+ * @param height Height of the slider.
+ * @param sliderPos Current position of the slider.
+ * @param minSliderPos Minimum position of the slider.
+ * @param maxSliderPos Maximum position of the slider.
+ * @param style Slider style (horizontal or vertical).
+ * @param slider Reference to the JUCE Slider component.
+ */
 void CustomLookAndFeel::drawLinearSlider(juce::Graphics& g,
                                          int x,
                                          int y,
@@ -67,11 +98,10 @@ void CustomLookAndFeel::drawLinearSlider(juce::Graphics& g,
     {
         if (sliderImage.isValid())
         {
-            // Use the entire available area as the background.
             g.drawImageWithin(sliderImage, x, y, width, height,
                               juce::RectanglePlacement::fillDestination);
         }
-        else // Fallback: draw a simple rectangular track if the image isn't loaded.
+        else
         {
             g.setColour(juce::Colours::darkgrey);
             const int trackThickness = 4;
@@ -88,29 +118,25 @@ void CustomLookAndFeel::drawLinearSlider(juce::Graphics& g,
             }
         }
         
-        // Ensure thumbImage is valid (loaded in the LookAndFeel's constructor or init)
         if (thumbImage.isValid())
         {
-            // Define the desired thumb dimensions (or use thumbImage.getWidth() / getHeight())
-            int thumbWidth  = thumbImage.getWidth()/2;
-            int thumbHeight = thumbImage.getHeight()/2;
+            int thumbWidth  = thumbImage.getWidth() / 2;
+            int thumbHeight = thumbImage.getHeight() / 2;
             
             int thumbX = 0;
             int thumbY = 0;
             
-            // Calculate thumb position based on slider style
             if (style == juce::Slider::LinearHorizontal)
             {
                 thumbX = static_cast<int>(sliderPos - thumbWidth / 2);
                 thumbY = y + (height / 2) - (thumbHeight / 2);
             }
-            else // LinearVertical
+            else
             {
                 thumbX = x + (width / 2) - (thumbWidth / 2);
                 thumbY = static_cast<int>(sliderPos - thumbHeight / 2);
             }
             
-            // Draw the PNG thumb image within the calculated bounds
             g.drawImageWithin(thumbImage, thumbX, thumbY, thumbWidth, thumbHeight,
                               juce::RectanglePlacement::centred);
         }
