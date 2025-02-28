@@ -1,196 +1,143 @@
-/*
- ==============================================================================
- 
- Playlist.cpp
- Created: 4 Feb 2025 6:12:32pm
- Author:  Jacques Thurling
- 
- ==============================================================================
+/**
+ * @file Playlist.cpp
+ * @brief Implementation of the Playlist class for managing audio tracks.
+ *
+ * This class handles loading, displaying, and managing an audio playlist,
+ * including interactions with two decks.
+ *
+ * @author Jacques Thurling
+ * @date 4 Feb 2025
  */
 
 #include <JuceHeader.h>
 #include "Playlist.h"
 
-//==============================================================================
+/**
+ * @brief Constructs a Playlist object.
+ *
+ * Initializes the playlist with predefined tracks, configures the table UI,
+ * and registers basic audio formats.
+ *
+ * @param formatManager Reference to an AudioFormatManager.
+ * @param cache Reference to an AudioThumbnailCache.
+ * @param deck1 Reference to the first DeckGUI.
+ * @param deck2 Reference to the second DeckGUI.
+ * @param _states Pointer to a vector of DeckState objects.
+ */
 Playlist::Playlist(juce::AudioFormatManager& formatManager, juce::AudioThumbnailCache& cache, DeckGUI& deck1, DeckGUI& deck2, std::vector<DeckState> *_states) :
 audioThumbnail(cache), audioFormatManager(formatManager), deck1(deck1), deck2(deck2), states(_states)
 {
-    // In your constructor, you should add any child components, and
-    // initialise any special settings that your component needs.
     formatManager.registerBasicFormats();
-    
-    juce::File appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
-    
-    juce::File file = appDir.getChildFile("Resources/Escape.mp3");
-    
-    juce::File fl = juce::File{file};
-    juce::URL fileUrl = juce::URL{juce::File{fl}};
-    
-    PlaylistFileInformation EscapeFile {
-        fl,
-        fileUrl
-    };
-    
-    playlistFiles.push_back(EscapeFile);
-    
-    appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
-    
-    file = appDir.getChildFile("Resources/Cool.mp3");
-    
-    fl = juce::File{file};
-    fileUrl = juce::URL{juce::File{fl}};
-    
-    PlaylistFileInformation CoolFile {
-        fl,
-        fileUrl
-    };
-    
-    playlistFiles.push_back(CoolFile);
-    
-    appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
-    
-    file = appDir.getChildFile("Resources/Faster.mp3");
-    
-    fl = juce::File{file};
-    fileUrl = juce::URL{juce::File{fl}};
-    
-    PlaylistFileInformation FasterFile {
-        fl,
-        fileUrl
-    };
-    
-    playlistFiles.push_back(FasterFile);
-    
-    appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
-    
-    file = appDir.getChildFile("Resources/History.mp3");
-    
-    fl = juce::File{file};
-    fileUrl = juce::URL{juce::File{fl}};
-    
-    PlaylistFileInformation HistoryFile {
-        fl,
-        fileUrl
-    };
-    
-    playlistFiles.push_back(HistoryFile);
-    
-    appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
-    
-    file = appDir.getChildFile("Resources/Funk.mp3");
-    
-    fl = juce::File{file};
-    fileUrl = juce::URL{juce::File{fl}};
-    
-    PlaylistFileInformation FunkFile {
-        fl,
-        fileUrl
-    };
-    
-    playlistFiles.push_back(FunkFile);
-    
-    appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
-    
-    file = appDir.getChildFile("Resources/Louder.mp3");
-    
-    fl = juce::File{file};
-    fileUrl = juce::URL{juce::File{fl}};
-    
-    PlaylistFileInformation LouderFile {
-        fl,
-        fileUrl
-    };
-    
-    playlistFiles.push_back(LouderFile);
-    
-    appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
-    
-    file = appDir.getChildFile("Resources/Love.mp3");
-    
-    fl = juce::File{file};
-    fileUrl = juce::URL{juce::File{fl}};
-    
-    PlaylistFileInformation LoveFile {
-        fl,
-        fileUrl
-    };
-    
-    playlistFiles.push_back(LoveFile);
-    
-    tableComponent.updateContent();
-    repaint();
-    
-    addAndMakeVisible(tableComponent);
-    
-    tableComponent.getHeader().addColumn("Track Title", 1, 200);
-    tableComponent.getHeader().addColumn("Track Length", 2, 200);
-    tableComponent.getHeader().addColumn("Waveform", 3, 200);
-    tableComponent.getHeader().addColumn("Load Deck A", 4, 200);
-    tableComponent.getHeader().addColumn("Load Deck B", 5, 200);
-    tableComponent.setModel(this);
+        
+        // Load predefined tracks into the playlist
+        std::vector<std::string> trackNames = {"Escape.mp3", "Cool.mp3", "Faster.mp3", "History.mp3", "Funk.mp3", "Louder.mp3", "Love.mp3"};
+        for (const auto& track : trackNames) {
+            juce::File file = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory().getChildFile("Resources/" + track);
+            playlistFiles.push_back({file, juce::URL(file)});
+        }
+        
+        tableComponent.updateContent();
+        repaint();
+        
+        // Configure table component UI
+        addAndMakeVisible(tableComponent);
+        tableComponent.getHeader().addColumn("Track Title", 1, 200);
+        tableComponent.getHeader().addColumn("Track Length", 2, 200);
+        tableComponent.getHeader().addColumn("Waveform", 3, 200);
+        tableComponent.getHeader().addColumn("Load Deck A", 4, 200);
+        tableComponent.getHeader().addColumn("Load Deck B", 5, 200);
+        tableComponent.setModel(this);
 }
 
+/**
+ * @brief Destructor for Playlist.
+ *
+ * Cleans up by detaching the table model.
+ */
 Playlist::~Playlist()
 {
     tableComponent.setModel(nullptr);
 }
 
-void Playlist::paint (juce::Graphics& g)
+/**
+ * @brief Paints the background of the Playlist component.
+ *
+ * @param g Graphics context.
+ */
+void Playlist::paint(juce::Graphics& g)
 {
-    g.fillAll (juce::Colours::grey);
+    g.fillAll(juce::Colours::grey);
 }
 
+/**
+ * @brief Resizes and arranges the table component.
+ */
 void Playlist::resized()
 {
-    // This method is where you should set the bounds of any child
-    // components that your component contains..
-    
     tableComponent.setBounds(0, 0, getWidth(), getHeight());
-    tableComponent.getHeader().setColumnWidth(1, getWidth()/5);
-    tableComponent.getHeader().setColumnWidth(2, getWidth()/5);
-    tableComponent.getHeader().setColumnWidth(3, getWidth()/5);
-    tableComponent.getHeader().setColumnWidth(4, getWidth()/5);
-    tableComponent.getHeader().setColumnWidth(5, getWidth()/5);
+    for (int i = 1; i <= 5; ++i) {
+        tableComponent.getHeader().setColumnWidth(i, getWidth() / 5);
+    }
     tableComponent.getHeader().setColour(juce::TableHeaderComponent::backgroundColourId, juce::Colours::white);
 }
 
-int Playlist::getNumRows(){
+/**
+ * @brief Returns the number of rows in the playlist.
+ *
+ * @return Number of tracks in the playlist.
+ */
+int Playlist::getNumRows()
+{
     return playlistFiles.size();
 }
 
-void Playlist::paintRowBackground(juce::Graphics& g, int rowNumber, int width, int height, bool rowIsSelected) {
-    if (rowIsSelected) {
-        g.fillAll(juce::Colours::lightblue);
-    } else {
-        if (rowNumber % 2 == 0) {
-            g.fillAll(juce::Colours::darkgrey);
-        } else {
-            g.fillAll(juce::Colours::grey);
+/**
+ * @brief Handles the background color of a row.
+ *
+ * @param g Graphics context.
+ * @param rowNumber Index of the row.
+ * @param width Row width.
+ * @param height Row height.
+ * @param rowIsSelected True if the row is selected.
+ */
+void Playlist::paintRowBackground(juce::Graphics& g, int rowNumber, int width, int height, bool rowIsSelected)
+{
+    g.fillAll(rowIsSelected ? juce::Colours::lightblue : (rowNumber % 2 == 0 ? juce::Colours::darkgrey : juce::Colours::grey));
+}
+
+/**
+ * @brief Paints a cell in the table.
+ *
+ * @param g Graphics context.
+ * @param rowNumber Row index.
+ * @param columnId Column index.
+ * @param width Cell width.
+ * @param height Cell height.
+ * @param rowIsSelected True if the row is selected.
+ */
+void Playlist::paintCell(juce::Graphics& g, int rowNumber, int columnId, int width, int height, bool rowIsSelected)
+{
+    g.setColour(juce::Colours::white);
+    if (columnId == 1) {
+        g.drawText(playlistFiles[rowNumber].fileUrl.getFileName(), 2, 0, width - 4, height, juce::Justification::centredLeft, true);
+    } else if (columnId == 2) {
+        if (auto* reader = audioFormatManager.createReaderFor(playlistFiles[rowNumber].file)) {
+            double lengthInSeconds = static_cast<double>(reader->lengthInSamples) / reader->sampleRate;
+            g.drawText(juce::String::formatted("%d:%02d", static_cast<int>(lengthInSeconds / 60), static_cast<int>(lengthInSeconds) % 60), 2, 0, width - 4, height, juce::Justification::centredLeft, true);
+            delete reader;
         }
-        
     }
 }
 
-void Playlist::paintCell(juce::Graphics& g, int rowNumber, int columnId, int width, int height, bool rowIsSelected) {
-    if (playlistFiles.size() > 0) {
-        g.setColour(juce::Colours::white);
-        if (columnId == 1) {
-            g.drawText(playlistFiles[rowNumber].fileUrl.getFileName(), 2, 0, width - 4, height, juce::Justification::centredLeft, true);
-        }
-        
-        if (columnId == 2) {
-            if (auto* reader = audioFormatManager.createReaderFor(playlistFiles[rowNumber].file)) {
-                double lengthInSeconds = static_cast<double>(reader->lengthInSamples) / reader->sampleRate;
-                int minutes = static_cast<int>(lengthInSeconds / 60);
-                int remainingSeconds = static_cast<int>(lengthInSeconds) % 60;
-                juce::String test = juce::String::formatted("%d:%02d", minutes, remainingSeconds);
-                g.drawText(test, 2, 0, width - 4, height, juce::Justification::centredLeft, true);
-                delete reader;
-            }
-        }
-    }
-}
-
+/**
+ * @brief Refreshes a table cell component.
+ *
+ * @param rowNumber Row index.
+ * @param columnId Column index.
+ * @param isRowSelected True if the row is selected.
+ * @param existingComponentToUpdate Pointer to the existing component.
+ * @return Updated component pointer.
+ */
 juce::Component* Playlist::refreshComponentForCell(int rowNumber, int columnId, bool isRowSelected, juce::Component* existingComponentToUpdate) {
     if (columnId == 3) {
         if (existingComponentToUpdate == nullptr) {
@@ -224,68 +171,84 @@ juce::Component* Playlist::refreshComponentForCell(int rowNumber, int columnId, 
     return existingComponentToUpdate;
 }
 
+/**
+ * @brief Handles table cell clicks.
+ *
+ * @param rowNumber Row index.
+ * @param columnId Column index.
+ * @param event Mouse event details.
+ */
 void Playlist::cellClicked(int rowNumber, int columnId, const juce::MouseEvent& event) {
     DBG(columnId);
 }
 
-void Playlist::buttonClicked(juce::Button* button) {
-    std::string id = button->getComponentID().toStdString();
+/**
+ * @brief Handles button clicks for loading tracks into decks.
+ *
+ * @param button Pointer to the clicked button.
+ */
+void Playlist::buttonClicked(juce::Button* button)
+{
+    std::vector<std::string> temp = split(button->getComponentID().toStdString(), '-');
+    int rowIndex = std::stoi(temp[0]);
+    int columnIndex = std::stoi(temp[1]);
     
-    std::vector<std::string> temp = split(id, '-');
-    
-    //     Check if column three is selected
-    if (std::stoi(temp[1]) == 4) {
-        deck1.loadUrl(playlistFiles[std::stoi(temp[0])].fileUrl);
-    }
-    
-    if (std::stoi(temp[1]) == 5) {
-        std::cout << temp[0] << std::endl;
-        deck2.loadUrl(playlistFiles[std::stoi(temp[0])].fileUrl);
+    if (columnIndex == 4) {
+        deck1.loadUrl(playlistFiles[rowIndex].fileUrl);
+    } else if (columnIndex == 5) {
+        deck2.loadUrl(playlistFiles[rowIndex].fileUrl);
     }
 }
 
+/**
+ * @brief Determines if the playlist accepts dragged files.
+ *
+ * @param files List of dragged file paths.
+ * @return Always returns true.
+ */
 bool Playlist::isInterestedInFileDrag(const juce::StringArray& files) {
     std::cout << "Playlist::isInterestedInFileDrag" << std::endl;
     return true;
 }
 
-void Playlist::filesDropped(const juce::StringArray& files, int x, int y) {
-    for (juce::String file : files) {
-        juce::File fl = juce::File{file};
-        juce::URL fileUrl = juce::URL{juce::File{fl}};
-        
-        PlaylistFileInformation fileInfo {
-            fl,
-            fileUrl
-        };
-        
-        playlistFiles.push_back(fileInfo);
-        
+/**
+ * @brief Handles file drops for adding tracks to the playlist.
+ *
+ * @param files List of dropped file paths.
+ * @param x Drop position x-coordinate.
+ * @param y Drop position y-coordinate.
+ */
+void Playlist::filesDropped(const juce::StringArray& files, int x, int y)
+{
+    for (const auto& file : files) {
+        playlistFiles.push_back({juce::File(file), juce::URL(juce::File(file))});
         tableComponent.updateContent();
         repaint();
         return;
     }
 }
 
-std::vector<std::string> Playlist::split(const std::string &s, char delimiter) {
+/**
+ * @brief Splits a string by a delimiter.
+ *
+ * @param s Input string.
+ * @param delimiter Character used as the delimiter.
+ * @return Vector of split substrings.
+ */
+std::vector<std::string> Playlist::split(const std::string &s, char delimiter)
+{
     std::vector<std::string> tokens;
+    std::istringstream stream(s);
     std::string token;
-    for (char c : s) {
-        if (c == delimiter) {
-            if (!token.empty()) {
-                tokens.push_back(token);
-                token.clear();
-            }
-        } else {
-            token.push_back(c);
-        }
-    }
-    // Push the final token if it exists
-    if (!token.empty())
+    while (std::getline(stream, token, delimiter)) {
         tokens.push_back(token);
+    }
     return tokens;
 }
 
+/**
+ * @brief Loads deck states from saved settings.
+ */
 void Playlist::setDeckStates() {
     for (auto const &state : *states) {
         if (state.deck_name == "deck_a") {
