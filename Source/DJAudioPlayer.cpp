@@ -1,15 +1,21 @@
-/*
- ==============================================================================
- 
- DJAudioPlayer.cpp
- Created: 13 Mar 2020 4:22:22pm
- Author:  matthew
- 
- ==============================================================================
+/**
+ * @file DJAudioPlayer.cpp
+ * @brief Implementation of the DJAudioPlayer class for audio processing.
+ *
+ * This class handles audio playback, filtering, and effects such as reverb,
+ * flanger, and tremolo.
+ *
+ * @author Matthew
+ * @date 13 Mar 2020
  */
 
 #include "DJAudioPlayer.h"
 
+/**
+ * @brief Constructor for DJAudioPlayer.
+ *
+ * Initializes reverb and flanger effect parameters.
+ */
 DJAudioPlayer::DJAudioPlayer()
 {
     reverbParams.roomSize = 0.9f;
@@ -28,11 +34,18 @@ DJAudioPlayer::DJAudioPlayer()
     flanger.setFeedback(0.7f);
     flanger.setMix(flangerWetDryMix);
 }
-DJAudioPlayer::~DJAudioPlayer()
-{
-    
-}
 
+/**
+ * @brief Destructor for DJAudioPlayer.
+ */
+DJAudioPlayer::~DJAudioPlayer()
+{}
+
+/**
+ * @brief Prepares the audio player for playback.
+ * @param samplesPerBlockExpected Number of samples per block expected.
+ * @param sampleRate The sample rate of the audio.
+ */
 void DJAudioPlayer::prepareToPlay (int samplesPerBlockExpected, double sampleRate)
 {
     formatManager.registerBasicFormats();
@@ -77,6 +90,10 @@ void DJAudioPlayer::prepareToPlay (int samplesPerBlockExpected, double sampleRat
     djSampleRate = sampleRate;
 }
 
+/**
+ * @brief Processes the next block of audio data.
+ * @param bufferToFill The buffer containing the audio data to process.
+ */
 void DJAudioPlayer::getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill)
 {
     // First get the next Audio Block to process
@@ -158,12 +175,19 @@ void DJAudioPlayer::getNextAudioBlock (const juce::AudioSourceChannelInfo& buffe
     // =============================================
 }
 
+/**
+ * @brief Releases allocated resources.
+ */
 void DJAudioPlayer::releaseResources()
 {
     transportSource.releaseResources();
     resampleSource.releaseResources();
 }
 
+/**
+ * @brief Loads an audio file from a given URL.
+ * @param audioURL The URL of the audio file to load.
+ */
 void DJAudioPlayer::loadURL(juce::URL audioURL)
 {
     auto* reader = formatManager.createReaderFor(audioURL.createInputStream(false));
@@ -175,6 +199,11 @@ void DJAudioPlayer::loadURL(juce::URL audioURL)
         readerSource.reset (newSource.release());
     }
 }
+
+/**
+ * @brief Sets the playback gain.
+ * @param gain The gain value (0.0 to 1.0).
+ */
 void DJAudioPlayer::setGain(double gain)
 {
     if (gain < 0 || gain > 1.0)
@@ -186,6 +215,11 @@ void DJAudioPlayer::setGain(double gain)
     }
     
 }
+
+/**
+ * @brief Sets the playback speed.
+ * @param ratio The speed ratio (0.0 to 100.0).
+ */
 void DJAudioPlayer::setSpeed(double ratio)
 {
     if (ratio < 0 || ratio > 100.0)
@@ -196,11 +230,20 @@ void DJAudioPlayer::setSpeed(double ratio)
         resampleSource.setResamplingRatio(ratio);
     }
 }
+
+/**
+ * @brief Sets the playback position.
+ * @param posInSecs Position in seconds.
+ */
 void DJAudioPlayer::setPosition(double posInSecs)
 {
     transportSource.setPosition(posInSecs);
 }
 
+/**
+ * @brief Sets the playback position relative to the track length.
+ * @param pos Relative position (0.0 to 1.0).
+ */
 void DJAudioPlayer::setPositionRelative(double pos)
 {
     if (pos < 0 || pos > 1.0)
@@ -213,22 +256,35 @@ void DJAudioPlayer::setPositionRelative(double pos)
     }
 }
 
-
+/**
+ * @brief Starts audio playback.
+ */
 void DJAudioPlayer::start()
 {
     transportSource.start();
 }
 
+/**
+ * @brief Stops audio playback.
+ */
 void DJAudioPlayer::stop()
 {
     transportSource.stop();
 }
 
+/**
+ * @brief Gets the playback position relative to the track length.
+ * @return Relative position (0.0 to 1.0).
+ */
 double DJAudioPlayer::getPositionRelative()
 {
     return transportSource.getCurrentPosition() / transportSource.getLengthInSeconds();
 }
 
+/**
+ * @brief Sets the high-pass filter amount.
+ * @param amount Normalized cutoff frequency factor (0.0 to 1.0).
+ */
 void DJAudioPlayer::setHighPassFilterAmount(double amount) {
     hpCutoff = 2000 * amount;
     
@@ -240,6 +296,10 @@ void DJAudioPlayer::setHighPassFilterAmount(double amount) {
     std::cout << hpCutoff << " " << amount << std::endl;
 }
 
+/**
+ * @brief Sets the low-pass filter amount.
+ * @param amount Normalized cutoff frequency factor (0.0 to 1.0).
+ */
 void DJAudioPlayer::setLowPassFilterAmount(double amount) {
     lpCutoff = 20000.0f * amount;
     
@@ -251,20 +311,36 @@ void DJAudioPlayer::setLowPassFilterAmount(double amount) {
     std::cout << lpCutoff << " " << amount << " " << djSampleRate * 0.5 << std::endl;
 }
 
+/**
+ * @brief Sets the band-pass filter mix amount.
+ * @param amount Mix amount (0.0 to 1.0).
+ */
 void DJAudioPlayer::setMidBandPassFilterAmount(double amount) {
     midBandPassMix = amount;
 }
 
+/**
+ * @brief Sets the reverb effect amount.
+ * @param amount The amount of reverb (0.0 to 1.0).
+ */
 void DJAudioPlayer::setReverbAmount(double amount) {
     reverbParams.wetLevel = amount;
     reverbParams.dryLevel = 1.0f - amount;
     reverb.setParameters(reverbParams);
 }
 
+/**
+ * @brief Sets the amount of flanger effect.
+ * @param amount The mix amount of the flanger effect (0.0 to 1.0).
+ */
 void DJAudioPlayer::setFlangerAmount(double amount) {
     flanger.setMix(amount);
 }
 
+/**
+ * @brief Sets the tremolo effect depth.
+ * @param amount The depth of the tremolo effect (0.0 to 1.0).
+ */
 void DJAudioPlayer::setTremelo(double amount) {
     volumeLFOdepth = amount;
 }
