@@ -1,11 +1,12 @@
-/*
- ==============================================================================
- 
- DJAudioPlayer.h
- Created: 28 Jan 2025 7:31:34pm
- Author:  Jacques Thurling
- 
- ==============================================================================
+/**
+ * @file DJAudioPlayer.cpp
+ * @brief Implementation of the DJAudioPlayer class for audio processing.
+ *
+ * This class handles audio playback, filtering, and effects such as reverb,
+ * flanger, and tremolo.
+ *
+ * @author Matthew
+ * @date 13 Mar 2020
  */
 
 #pragma once
@@ -23,6 +24,12 @@ class DJAudioPlayer : public juce::AudioSource {
     private:
     juce::AudioFormatManager formatManager; ///< Manages available audio formats.
     std::unique_ptr<juce::AudioFormatReaderSource> readerSource; ///< Pointer to the audio source.
+    
+    /**
+     * Author: Jacques Thurling
+     * 13 Mar 2020
+     * ===========================================================
+     */
     
     double hpCutoff = 100.0f; ///< High-pass filter cutoff frequency.
     double hpQualityFactor = 0.7071f; ///< High-pass filter quality factor.
@@ -52,6 +59,7 @@ class DJAudioPlayer : public juce::AudioSource {
     
     double flangerWetDryMix = 0.0f; ///< Flanger wet/dry mix amount.
     
+    // ===========================================================
     public:
     /**
      * @brief Constructor for DJAudioPlayer.
@@ -115,6 +123,11 @@ class DJAudioPlayer : public juce::AudioSource {
     void setPositionRelative(double pos);
     
     /**
+     * ==============================================================
+     * Author: Jacques Thurling
+     * 13 Mar 2020
+     * ==============================================================
+     *
      * @brief Sets the high-pass filter cutoff frequency.
      * @param amount The cutoff frequency value.
      */
@@ -149,6 +162,7 @@ class DJAudioPlayer : public juce::AudioSource {
      * @param amount The tremolo mix amount.
      */
     void setTremelo(double amount);
+    /// ==============================================================
     
     /**
      * @brief Starts audio playback.

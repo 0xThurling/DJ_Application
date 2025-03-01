@@ -1,4 +1,5 @@
 /**
+ * =================================================================
  * @file MixerView.cpp
  * @brief Implementation of the MixerView component.
  *

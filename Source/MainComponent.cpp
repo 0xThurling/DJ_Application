@@ -1,4 +1,5 @@
 /**
+ * =================================================================
  * @file MainComponent.cpp
  * @brief Implementation of the MainComponent class.
  *
@@ -36,8 +37,16 @@ MainComponent::MainComponent()
     // Add child components and make them visible.
     addAndMakeVisible(deck1);
     addAndMakeVisible(deck2);
+    
+    /**
+     * ==============================================================
+     * Author: Jacques Thurling
+     * 13 Mar 2020
+     * ==============================================================
+     */
     addAndMakeVisible(mixerView);
     addAndMakeVisible(playlistComponent);
+    /// ==============================================================
 }
 
 /**

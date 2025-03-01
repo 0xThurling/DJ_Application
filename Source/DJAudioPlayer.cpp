@@ -52,6 +52,12 @@ void DJAudioPlayer::prepareToPlay (int samplesPerBlockExpected, double sampleRat
     transportSource.prepareToPlay(samplesPerBlockExpected, sampleRate);
     resampleSource.prepareToPlay(samplesPerBlockExpected, sampleRate);
     
+    /**
+     * ==============================================================
+     * Author: Jacques Thurling
+     * 13 Mar 2020
+     * ==============================================================
+     */
     // HighPassfilter setup
     highpassFilter.reset();
     auto hpCoeffs = juce::dsp::IIR::Coefficients<float>::makeHighPass(sampleRate, hpCutoff, hpQualityFactor);
@@ -85,6 +91,7 @@ void DJAudioPlayer::prepareToPlay (int samplesPerBlockExpected, double sampleRat
     flangerSpec.maximumBlockSize = samplesPerBlockExpected;
     flangerSpec.numChannels = 1;
     flanger.prepare(flangerSpec);
+    /// ==============================================================
     
     // Store sample rate for later processing needed
     djSampleRate = sampleRate;
@@ -98,6 +105,13 @@ void DJAudioPlayer::getNextAudioBlock (const juce::AudioSourceChannelInfo& buffe
 {
     // First get the next Audio Block to process
     resampleSource.getNextAudioBlock(bufferToFill);
+    
+    /**
+     * ==============================================================
+     * Author: Jacques Thurling
+     * 13 Mar 2020
+     * ==============================================================
+     */
     
     juce::AudioBuffer<float> dryBuffer;
     dryBuffer.makeCopyOf(*bufferToFill.buffer);
@@ -172,7 +186,7 @@ void DJAudioPlayer::getNextAudioBlock (const juce::AudioSourceChannelInfo& buffe
             volumeLFOPhase -= juce::MathConstants<float>::twoPi;
         }
     }
-    // =============================================
+    /// ==============================================================
 }
 
 /**
@@ -282,6 +296,11 @@ double DJAudioPlayer::getPositionRelative()
 }
 
 /**
+ * ==============================================================
+ * Author: Jacques Thurling
+ * 13 Mar 2020
+ * ==============================================================
+ *
  * @brief Sets the high-pass filter amount.
  * @param amount Normalized cutoff frequency factor (0.0 to 1.0).
  */
@@ -344,3 +363,4 @@ void DJAudioPlayer::setFlangerAmount(double amount) {
 void DJAudioPlayer::setTremelo(double amount) {
     volumeLFOdepth = amount;
 }
+/// ==============================================================

@@ -1,4 +1,5 @@
 /**
+ * =================================================================
  * @file MixerView.h
  * @brief Header file for the MixerView component.
  *

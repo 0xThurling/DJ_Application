@@ -1,4 +1,5 @@
 /**
+ * =================================================================
  * @file DeckWaveformDisplay.h
  * @brief Declaration of the DeckWaveformDisplay class.
  *

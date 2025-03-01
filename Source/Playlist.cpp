@@ -1,4 +1,5 @@
 /**
+ * =================================================================
  * @file Playlist.cpp
  * @brief Implementation of the Playlist class for managing audio tracks.
  *

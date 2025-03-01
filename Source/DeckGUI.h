@@ -107,6 +107,10 @@ public:
     void loadUrl(juce::URL file);
     
     /**
+     * ==============================================================
+     * Author: Jacques Thurling
+     * 13 Mar 2020
+     * ==============================================================
      * @brief Sets the initial playback position.
      * @param relativePosition The initial position as a normalized value between 0 and 1.
      */
@@ -126,6 +130,13 @@ public:
     void setDeckState(double position);
     
     private:
+    /**
+     * ==============================================================
+     * Author: Jacques Thurling
+     * 13 Mar 2020
+     * ==============================================================
+     */
+    
     std::vector<std::unique_ptr<juce::LookAndFeel>> lookAndFeels;
     
     std::string deck_name;
@@ -177,6 +188,7 @@ public:
     std::unique_ptr<juce::ImageButton> stopImageButton;
     
     bool play = false;
+    /// ==============================================================
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DeckGUI)
 };

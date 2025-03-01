@@ -1,3 +1,12 @@
+/**
+ * =================================================================
+ * @file MainComponent.cpp
+ * @brief Implementation of the MainComponent class.
+ *
+ * This component sets up the main window of the application, initializes
+ * audio settings, and arranges the child components.
+ */
+
 #pragma once
 
 #include <JuceHeader.h>

@@ -1,4 +1,5 @@
 /**
+ * =================================================================
  * @file DeckWaveformDisplay.cpp
  * @brief Implementation of the DeckWaveformDisplay component.
  *

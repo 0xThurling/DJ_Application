@@ -1,5 +1,5 @@
 /*
- ==============================================================================
+ ============================================================================
  
  DeckGUI.cpp
  Created: 29 Jan 2025 7:21:23am
@@ -23,6 +23,12 @@
 DeckGUI::DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager, juce::AudioThumbnailCache& cache, std::string _deckname, DeckState& _state)
 : djAudioPlayer(_player), waveformDisplay(formatManager, cache), deck_name(_deckname), deckDisplay(formatManager, cache), state(_state)
 {
+    /**
+     * ==============================================================
+     * Author: Jacques Thurling
+     * 13 Mar 2020
+     * ==============================================================
+     */
     auto customLookAndFeel = std::make_unique<CustomLookAndFeel>(0.6f);
     
     // In your constructor, you should add any child components, and
@@ -117,6 +123,8 @@ DeckGUI::DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager
     stopButton.setButtonText("STOP");
     loadButton.setButtonText("LOAD");
     
+    /// ==================================================================
+    
     speedSlider.setValue(1.0f);
     
     addAndMakeVisible(loadButton);
@@ -133,6 +141,14 @@ DeckGUI::DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager
     volumeSlider.addListener(this);
     positionSlider.addListener(this);
     speedSlider.addListener(this);
+    
+    /**
+     * ==============================================================
+     * Author: Jacques Thurling
+     * 13 Mar 2020
+     * ==============================================================
+     */
+    
     playImageButton->addListener(this);
     stopImageButton->addListener(this);
     
@@ -149,6 +165,7 @@ DeckGUI::DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager
     startTimer(10);
     
     lookAndFeels.emplace_back(std::move(customLookAndFeel));
+    /// ============================================================
 }
 
 /**
@@ -165,7 +182,12 @@ DeckGUI::~DeckGUI()
 void DeckGUI::paint (juce::Graphics& g)
 {
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));   // clear the background
-    
+    /**
+     * ==============================================================
+     * Author: Jacques Thurling
+     * 13 Mar 2020
+     * ==============================================================
+     */
     if (deckImage.isValid()) {
         auto bounds = getLocalBounds().toFloat();
         auto imageBounds = deckImage.getBounds().toFloat();
@@ -215,6 +237,7 @@ void DeckGUI::paint (juce::Graphics& g)
         playImageButton->setVisible(false);
         stopImageButton->setVisible(true);
     }
+    /// ====================================================
 }
 
 /**
@@ -225,6 +248,13 @@ void DeckGUI::resized()
     // This method is where you should set the bounds of any child
     // components that your component contains..
     float rowH = getHeight()/8;
+    
+    /**
+     * ==============================================================
+     * Author: Jacques Thurling
+     * 13 Mar 2020
+     * ==============================================================
+     */
     
     // Speed slider
     speedSlider.setBounds((getWidth()/8) * 7, rowH * 4, (getWidth()/8), rowH * 4);
@@ -244,6 +274,7 @@ void DeckGUI::resized()
     
     playImageButton->setBounds(10, rowH * 7 - 50, play_image.getWidth(), play_image.getHeight());
     stopImageButton->setBounds(10, rowH * 7 - 50, stop_image.getWidth(), stop_image.getHeight());
+    /// ======================================================
 }
 
 /**
@@ -291,6 +322,12 @@ void DeckGUI::sliderValueChanged(juce::Slider* slider) {
         djAudioPlayer->setSpeed(slider->getValue());
     }
     
+    /**
+     * ==============================================================
+     * Author: Jacques Thurling
+     * 13 Mar 2020
+     * ==============================================================
+     */
     if (slider == &reverb) {
         djAudioPlayer->setReverbAmount(slider->getValue());
     }
@@ -383,6 +420,12 @@ void DeckGUI::loadUrl(juce::URL fileURL) {
     
     setDeckState(fileURL.getFileName().toStdString(), djAudioPlayer->getPositionRelative());
 }
+/**
+ * ==============================================================
+ * Author: Jacques Thurling
+ * 13 Mar 2020
+ * ==============================================================
+ */
 
 void DeckGUI::setDeckState(std::string fileName, double newPosition) {
     state.file_name = fileName;
@@ -392,3 +435,5 @@ void DeckGUI::setDeckState(std::string fileName, double newPosition) {
 void DeckGUI::setDeckState(double newPosition) {
     state.position = newPosition;
 }
+
+/// ==============================================================
