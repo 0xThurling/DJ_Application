@@ -23,16 +23,31 @@
  */
 CustomLookAndFeel::CustomLookAndFeel(float _scaleFactor) : scaleFactor(_scaleFactor)
 {
+    juce::File executableFile = juce::File::getSpecialLocation(juce::File::currentExecutableFile);
+    juce::File projectDir = executableFile.getParentDirectory();
+    juce::String correctPath;
+    while (projectDir.getFileName() != "New_DJ" && projectDir.getParentDirectory() != projectDir) {
+        projectDir = projectDir.getParentDirectory();
+    }
+    
+    if (projectDir.getFileName() == "New_DJ") {
+        correctPath = projectDir.getFullPathName();
+    } else {
+        // Handle the case where the New_DJ folder wasn't found
+        DBG("New_DJ folder not found in the directory structure");
+    }
+    
     // Initialize image resources
     juce::File appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
     
-    juce::File imageFile = appDir.getChildFile("Resources/knob.png");
+    std::string imagePath = correctPath.toStdString() + "/Assets/knob.png";
+    juce::File imageFile(imagePath);
     knobImage = juce::ImageCache::getFromFile(imageFile);
     
     appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
-    imageFile = appDir.getChildFile("Resources/slider_thumb.png");
-    
-    thumbImage = juce::ImageCache::getFromFile(imageFile);
+    imagePath = correctPath.toStdString() + "/Assets/slider_thumb.png";
+    juce::File thumbImageFile(imagePath);
+    thumbImage = juce::ImageCache::getFromFile(thumbImageFile);
 }
 
 /**
