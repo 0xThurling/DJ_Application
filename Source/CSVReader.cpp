@@ -37,11 +37,21 @@ CSVReader::CSVReader()
  */
 std::vector<DeckState> CSVReader::readCSV() {
     // Determine the application's directory.
-    juce::File appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile)
-                              .getParentDirectory()
-                              .getParentDirectory();
-    // Construct the path to the CSV file.
-    juce::File stateFile = appDir.getChildFile("Resources/dj_program_state.csv");
+    juce::File executableFile = juce::File::getSpecialLocation(juce::File::currentExecutableFile);
+    juce::File projectDir = executableFile.getParentDirectory();
+    juce::String correctPath;
+    while (projectDir.getFileName() != "New_DJ" && projectDir.getParentDirectory() != projectDir) {
+        projectDir = projectDir.getParentDirectory();
+    }
+    
+    if (projectDir.getFileName() == "New_DJ") {
+        correctPath = projectDir.getFullPathName();
+    } else {
+        // Handle the case where the New_DJ folder wasn't found
+        DBG("New_DJ folder not found in the directory structure");
+    }
+    
+    juce::File stateFile(correctPath.toStdString() + "/Assets/dj_program_state.csv");
     
     // Output the full path of the state file.
     std::cout << stateFile.getFullPathName().toStdString() << std::endl;
