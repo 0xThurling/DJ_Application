@@ -34,6 +34,27 @@
             file="Source/MainComponent.cpp"/>
     </GROUP>
     <GROUP id="{0977635C-AE90-C309-414A-7F88AA747401}" name="Assets">
+      <FILE id="FZlU7U" name="deck_a.png" compile="0" resource="1" file="Assets/deck_a.png"/>
+      <FILE id="njCLoh" name="deck_b.png" compile="0" resource="1" file="Assets/deck_b.png"/>
+      <FILE id="hHNNpv" name="deck_face.png" compile="0" resource="1" file="Assets/deck_face.png"/>
+      <FILE id="NBuYTP" name="deck.png" compile="0" resource="1" file="Assets/deck.png"/>
+      <FILE id="Yd8mM9" name="dj_program_state.csv" compile="0" resource="1"
+            file="Assets/dj_program_state.csv"/>
+      <FILE id="qsI2b3" name="Escape.mp3" compile="0" resource="1" file="Assets/Escape.mp3"/>
+      <FILE id="lI2hfI" name="Faster.mp3" compile="0" resource="1" file="Assets/Faster.mp3"/>
+      <FILE id="Sr4NFG" name="Funk.mp3" compile="0" resource="1" file="Assets/Funk.mp3"/>
+      <FILE id="RBrhCk" name="History.mp3" compile="0" resource="1" file="Assets/History.mp3"/>
+      <FILE id="yBoj04" name="knob.png" compile="0" resource="1" file="Assets/knob.png"/>
+      <FILE id="jPV7D4" name="Louder.mp3" compile="0" resource="1" file="Assets/Louder.mp3"/>
+      <FILE id="RSM3Ht" name="Love.mp3" compile="0" resource="1" file="Assets/Love.mp3"/>
+      <FILE id="a3lg5k" name="otodecks.png" compile="0" resource="1" file="Assets/otodecks.png"/>
+      <FILE id="almYPV" name="overlay.png" compile="0" resource="1" file="Assets/overlay.png"/>
+      <FILE id="R8d9wA" name="play.png" compile="0" resource="1" file="Assets/play.png"/>
+      <FILE id="xwDr2o" name="slider_background.png" compile="0" resource="1"
+            file="Assets/slider_background.png"/>
+      <FILE id="CvElnZ" name="slider_thumb.png" compile="0" resource="1"
+            file="Assets/slider_thumb.png"/>
+      <FILE id="IbyguK" name="stop.png" compile="0" resource="1" file="Assets/stop.png"/>
       <FILE id="wUqkR7" name="deck_spinner.png" compile="0" resource="1"
             file="Assets/deck_spinner.png"/>
       <FILE id="Mgzfkf" name="Cool.mp3" compile="0" resource="1" file="Assets/Cool.mp3"/>

@@ -37,14 +37,10 @@ CustomLookAndFeel::CustomLookAndFeel(float _scaleFactor) : scaleFactor(_scaleFac
         DBG("New_DJ folder not found in the directory structure");
     }
     
-    // Initialize image resources
-    juce::File appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
-    
     std::string imagePath = correctPath.toStdString() + "/Assets/knob.png";
     juce::File imageFile(imagePath);
     knobImage = juce::ImageCache::getFromFile(imageFile);
     
-    appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
     imagePath = correctPath.toStdString() + "/Assets/slider_thumb.png";
     juce::File thumbImageFile(imagePath);
     thumbImage = juce::ImageCache::getFromFile(thumbImageFile);

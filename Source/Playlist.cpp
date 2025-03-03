@@ -29,25 +29,38 @@ Playlist::Playlist(juce::AudioFormatManager& formatManager, juce::AudioThumbnail
 audioThumbnail(cache), audioFormatManager(formatManager), deck1(deck1), deck2(deck2), states(_states)
 {
     formatManager.registerBasicFormats();
-        
-        // Load predefined tracks into the playlist
-        std::vector<std::string> trackNames = {"Escape.mp3", "Cool.mp3", "Faster.mp3", "History.mp3", "Funk.mp3", "Louder.mp3", "Love.mp3"};
-        for (const auto& track : trackNames) {
-            juce::File file = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory().getChildFile("Resources/" + track);
-            playlistFiles.push_back({file, juce::URL(file)});
-        }
-        
-        tableComponent.updateContent();
-        repaint();
-        
-        // Configure table component UI
-        addAndMakeVisible(tableComponent);
-        tableComponent.getHeader().addColumn("Track Title", 1, 200);
-        tableComponent.getHeader().addColumn("Track Length", 2, 200);
-        tableComponent.getHeader().addColumn("Waveform", 3, 200);
-        tableComponent.getHeader().addColumn("Load Deck A", 4, 200);
-        tableComponent.getHeader().addColumn("Load Deck B", 5, 200);
-        tableComponent.setModel(this);
+    juce::File executableFile = juce::File::getSpecialLocation(juce::File::currentExecutableFile);
+    juce::File projectDir = executableFile.getParentDirectory();
+    juce::String correctPath;
+    while (projectDir.getFileName() != "New_DJ" && projectDir.getParentDirectory() != projectDir) {
+        projectDir = projectDir.getParentDirectory();
+    }
+    
+    if (projectDir.getFileName() == "New_DJ") {
+        correctPath = projectDir.getFullPathName();
+    } else {
+        // Handle the case where the New_DJ folder wasn't found
+        DBG("New_DJ folder not found in the directory structure");
+    }
+    
+    // Load predefined tracks into the playlist
+    std::vector<std::string> trackNames = {"Escape.mp3", "Cool.mp3", "Faster.mp3", "History.mp3", "Funk.mp3", "Louder.mp3", "Love.mp3"};
+    for (const auto& track : trackNames) {
+        juce::File file(correctPath.toStdString() + "/Assets/" + track);
+        playlistFiles.push_back({file, juce::URL(file)});
+    }
+    
+    tableComponent.updateContent();
+    repaint();
+    
+    // Configure table component UI
+    addAndMakeVisible(tableComponent);
+    tableComponent.getHeader().addColumn("Track Title", 1, 200);
+    tableComponent.getHeader().addColumn("Track Length", 2, 200);
+    tableComponent.getHeader().addColumn("Waveform", 3, 200);
+    tableComponent.getHeader().addColumn("Load Deck A", 4, 200);
+    tableComponent.getHeader().addColumn("Load Deck B", 5, 200);
+    tableComponent.setModel(this);
 }
 
 /**
@@ -251,18 +264,30 @@ std::vector<std::string> Playlist::split(const std::string &s, char delimiter)
  * @brief Loads deck states from saved settings.
  */
 void Playlist::setDeckStates() {
+    juce::File executableFile = juce::File::getSpecialLocation(juce::File::currentExecutableFile);
+    juce::File projectDir = executableFile.getParentDirectory();
+    juce::String correctPath;
+    while (projectDir.getFileName() != "New_DJ" && projectDir.getParentDirectory() != projectDir) {
+        projectDir = projectDir.getParentDirectory();
+    }
+    
+    if (projectDir.getFileName() == "New_DJ") {
+        correctPath = projectDir.getFullPathName();
+    } else {
+        // Handle the case where the New_DJ folder wasn't found
+        DBG("New_DJ folder not found in the directory structure");
+    }
+    
     for (auto const &state : *states) {
         if (state.deck_name == "deck_a") {
-            juce::File appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
-            juce::File file = appDir.getChildFile("Resources/" + state.file_name);
+            juce::File file(correctPath.toStdString() + "/Assets/" + state.file_name);
             juce::URL fileUrl = juce::URL{file};
             
             deck1.loadUrl(fileUrl);
         }
         
         if (state.deck_name == "deck_b") {
-            juce::File appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
-            juce::File file = appDir.getChildFile("Resources/" + state.file_name);
+            juce::File file(correctPath.toStdString() + "/Assets/" + state.file_name);
             juce::URL fileUrl = juce::URL{file};
             
             deck2.loadUrl(fileUrl);
