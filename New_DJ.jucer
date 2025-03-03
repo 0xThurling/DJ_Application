@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="YPooMc" name="New_DJ" projectType="guiapp" useAppConfig="0"
-              addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1">
-  <MAINGROUP id="pA4PmO" name="New_DJ">
+<JUCERPROJECT id="YPooMc" name="OtoDecks" projectType="guiapp" useAppConfig="0"
+              addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1" binaryDataNamespace="BinaryData"
+              maxBinaryFileSize="20971520">
+  <MAINGROUP id="pA4PmO" name="OtoDecks">
     <GROUP id="{40B34DC4-B036-33BF-064A-CD8F6C386099}" name="Source">
       <FILE id="Aw4CRw" name="CSVReader.cpp" compile="1" resource="0" file="Source/CSVReader.cpp"/>
       <FILE id="P6kLYj" name="CSVReader.h" compile="0" resource="0" file="Source/CSVReader.h"/>
@@ -31,6 +32,13 @@
       <FILE id="etvHhr" name="DJAudioPlayer.h" compile="0" resource="0" file="Source/DJAudioPlayer.h"/>
       <FILE id="pVmdqV" name="MainComponent.cpp" compile="1" resource="0"
             file="Source/MainComponent.cpp"/>
+    </GROUP>
+    <GROUP id="{0977635C-AE90-C309-414A-7F88AA747401}" name="Assets">
+      <FILE id="wUqkR7" name="deck_spinner.png" compile="0" resource="1"
+            file="Assets/deck_spinner.png"/>
+      <FILE id="Mgzfkf" name="Cool.mp3" compile="0" resource="1" file="Assets/Cool.mp3"/>
+      <FILE id="lED0VN" name="background_info.png" compile="0" resource="1"
+            file="Assets/background_info.png"/>
     </GROUP>
   </MAINGROUP>
   <MODULES>

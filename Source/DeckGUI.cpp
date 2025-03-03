@@ -30,28 +30,40 @@ DeckGUI::DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager
      * ==============================================================
      */
     auto customLookAndFeel = std::make_unique<CustomLookAndFeel>(0.6f);
+
+    juce::File executableFile = juce::File::getSpecialLocation(juce::File::currentExecutableFile);
+    juce::File projectDir = executableFile.getParentDirectory();
+    juce::String correctPath;
+    while (projectDir.getFileName() != "New_DJ" && projectDir.getParentDirectory() != projectDir) {
+        projectDir = projectDir.getParentDirectory();
+    }
     
-    // In your constructor, you should add any child components, and
-    // initialise any special settings that your component needs.
-    juce::File appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
+    if (projectDir.getFileName() == "New_DJ") {
+        correctPath = projectDir.getFullPathName();
+    } else {
+        // Handle the case where the New_DJ folder wasn't found
+        DBG("New_DJ folder not found in the directory structure");
+    }
     
-    juce::File imageFile = appDir.getChildFile("Resources/deck_spinner.png");
+    std::string imagePath = correctPath.toStdString() + "/Assets/deck_spinner.png";
+    juce::File imageFile(imagePath);
     deckImage = juce::ImageCache::getFromFile(imageFile);
     
-    imageFile = appDir.getChildFile("Resources/deck_face.png");
-    deck_face_image = juce::ImageCache::getFromFile(imageFile);
+    imagePath = correctPath.toStdString() + "/Assets/deck_face.png";
+    juce::File deckFaceImage(imagePath);
+    deck_face_image = juce::ImageCache::getFromFile(deckFaceImage);
     
-    imageFile = appDir.getChildFile("Resources/background_info.png");
-    backgroundImage = juce::ImageCache::getFromFile(imageFile);
+    imagePath = correctPath.toStdString() + "/Assets/background_info.png";
+    juce::File backgroundInfoImage(imagePath);
+    backgroundImage = juce::ImageCache::getFromFile(backgroundInfoImage);
     
-    imageFile = appDir.getChildFile("Resources/stop.png");
-    stop_image = juce::ImageCache::getFromFile(imageFile);
+    imagePath = correctPath.toStdString() + "/Assets/stop.png";
+    juce::File stopImage(imagePath);
+    stop_image = juce::ImageCache::getFromFile(stopImage);
     
-    imageFile = appDir.getChildFile("Resources/overlay.png");
-    deck_overlay = juce::ImageCache::getFromFile(imageFile);
-    
-    imageFile = appDir.getChildFile("Resources/play.png");
-    play_image = juce::ImageCache::getFromFile(imageFile);
+    imagePath = correctPath.toStdString() + "/Assets/play.png";
+    juce::File playImage(imagePath);
+    play_image = juce::ImageCache::getFromFile(playImage);
     
     playImageButton = std::make_unique<juce::ImageButton>("playImageButton");
     
@@ -75,8 +87,9 @@ DeckGUI::DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager
     // Make the button visible in your component
     addAndMakeVisible(stopImageButton.get());
     
-    imageFile = appDir.getChildFile("Resources/" + deck_name + ".png");
-    deck_number_image = juce::ImageCache::getFromFile(imageFile);
+    imagePath = correctPath.toStdString() + "/Assets/" + deck_name + ".png";
+    juce::File deckImage(imagePath);
+    deck_number_image = juce::ImageCache::getFromFile(deckImage);
     
     speedSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
     

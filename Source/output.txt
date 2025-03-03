@@ -1,0 +1,3254 @@
+/**
+ * =================================================================
+ * @file CSVReader.h
+ * @brief Header file for the CSVReader class and DeckState structure.
+ *
+ * Created: 24 Feb 2025 9:44:39am
+ * Author: Jacques Thurling
+ */
+
+#pragma once
+
+#include <JuceHeader.h>
+
+/**
+ * @brief Structure representing the state of a deck.
+ *
+ * Contains the deck's name, current position, and associated file name.
+ */
+struct DeckState {
+    std::string deck_name;   /**< The name identifier for the deck. */
+    double position;         /**< The current position in the deck (e.g., time or progress). */
+    std::string file_name;   /**< The name of the file associated with the deck. */
+};
+
+/**
+ * @brief Class for reading and parsing CSV files.
+ *
+ * The CSVReader class provides functionality to tokenize a CSV line and
+ * read a CSV file, converting each row into a DeckState structure.
+ */
+class CSVReader
+{
+public:
+    /**
+     * @brief Constructor for CSVReader.
+     *
+     * Initializes the CSVReader object.
+     */
+    CSVReader();
+    
+    /**
+     * @brief Splits a CSV line into individual tokens.
+     *
+     * This static method takes a CSV line and a separator character, and returns
+     * a vector containing each token extracted from the line.
+     *
+     * @param csvLine A string representing a line from a CSV file.
+     * @param separator The character used to delimit fields in the CSV line.
+     * @return std::vector<std::string> A vector of tokens parsed from the CSV line.
+     */
+    static std::vector<std::string> tokenise(std::string csvLine, char separator);
+    
+    /**
+     * @brief Reads and parses a CSV file.
+     *
+     * Processes the CSV file and converts its content into a vector of DeckState structures.
+     *
+     * @return std::vector<DeckState> A vector containing the deck states read from the CSV file.
+     */
+    std::vector<DeckState> readCSV();
+    
+private:
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (CSVReader)
+};
+/*
+ ============================================================================
+ 
+ CustomLookAndFeel.h
+ Created: 17 Feb 2025 4:13:42pm
+ Author:  Jacques Thurling
+ 
+ ============================================================================
+ */
+
+#pragma once
+
+#include <JuceHeader.h>
+
+/**
+ * @class CustomLookAndFeel
+ * @brief A custom LookAndFeel class for JUCE components.
+ */
+class CustomLookAndFeel : public juce::LookAndFeel_V4
+{
+public:
+    /**
+     * @brief Constructor for CustomLookAndFeel.
+     * @param scaleFactor Scaling factor for UI elements.
+     */
+    CustomLookAndFeel(float scaleFactor);
+    
+    /**
+     * @brief Destructor for CustomLookAndFeel.
+     */
+    ~CustomLookAndFeel() override;
+    
+    /**
+     * @brief Draws a rotary slider with a custom knob image.
+     * @param g Graphics context to draw into.
+     * @param x X position of the slider.
+     * @param y Y position of the slider.
+     * @param width Width of the slider.
+     * @param height Height of the slider.
+     * @param sliderPosProportional Normalized slider position (0.0 - 1.0).
+     * @param rotaryStartAngle Starting angle of the rotary control.
+     * @param rotaryEndAngle Ending angle of the rotary control.
+     * @param slider Reference to the JUCE Slider component.
+     */
+    void drawRotarySlider(juce::Graphics& g, int x, int y, int width, int height, float sliderPosProportional, float rotaryStartAngle, float rotaryEndAngle, juce::Slider& slider) override;
+    
+    /**
+     * @brief Draws a linear slider with a custom thumb image.
+     * @param g Graphics context to draw into.
+     * @param x X position of the slider.
+     * @param y Y position of the slider.
+     * @param width Width of the slider.
+     * @param height Height of the slider.
+     * @param sliderPos Current position of the slider.
+     * @param minSliderPos Minimum position of the slider.
+     * @param maxSliderPos Maximum position of the slider.
+     * @param style Slider style (horizontal or vertical).
+     * @param slider Reference to the JUCE Slider component.
+     */
+    void drawLinearSlider(juce::Graphics& g,
+                          int x,
+                          int y,
+                          int width,
+                          int height,
+                          float sliderPos,
+                          float minSliderPos,
+                          float maxSliderPos,
+                          juce::Slider::SliderStyle style,
+                          juce::Slider& slider) override;
+    
+private:
+    juce::Image knobImage;  ///< Image for the rotary slider knob.
+    juce::Image sliderImage; ///< Image for the linear slider background.
+    juce::Image thumbImage; ///< Image for the linear slider thumb.
+    
+    float scaleFactor; ///< Scaling factor for UI elements.
+    
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (CustomLookAndFeel)
+};
+/**
+ * @file DJAudioPlayer.cpp
+ * @brief Implementation of the DJAudioPlayer class for audio processing.
+ *
+ * This class handles audio playback, filtering, and effects such as reverb,
+ * flanger, and tremolo.
+ *
+ * @author Matthew
+ * @date 13 Mar 2020
+ */
+
+#pragma once
+
+#include <JuceHeader.h>
+
+/**
+ * @class DJAudioPlayer
+ * @brief A class for handling audio playback with various effects and filters.
+ *
+ * DJAudioPlayer provides functionalities to play, stop, and manipulate audio
+ * including filtering, reverb, flanger, and tremolo effects.
+ */
+class DJAudioPlayer : public juce::AudioSource {
+    private:
+    juce::AudioFormatManager formatManager; ///< Manages available audio formats.
+    std::unique_ptr<juce::AudioFormatReaderSource> readerSource; ///< Pointer to the audio source.
+    
+    /**
+     * Author: Jacques Thurling
+     * 13 Mar 2020
+     * ===========================================================
+     */
+    
+    double hpCutoff = 100.0f; ///< High-pass filter cutoff frequency.
+    double hpQualityFactor = 0.7071f; ///< High-pass filter quality factor.
+    juce::dsp::IIR::Filter<float> highpassFilter; ///< High-pass filter object.
+    
+    double lpCutoff = 20000.0f; ///< Low-pass filter cutoff frequency.
+    double lpQualityFactor = 0.7071f; ///< Low-pass filter quality factor.
+    juce::dsp::IIR::Filter<float> lowpassFilter; ///< Low-pass filter object.
+    
+    double midCutoff = 500.0f; ///< Mid-band pass filter cutoff frequency.
+    double midQualityFactor = 0.7071f; ///< Mid-band pass filter quality factor.
+    double midBandPassMix = 0.0; ///< Mix amount for mid-band pass filter.
+    juce::dsp::IIR::Filter<float> midBandPassFilter; ///< Mid-band pass filter object.
+    
+    float volumeLFOPhase = 0.0f; ///< Phase of volume LFO.
+    float volumeLFOrate = 10.0f; ///< Rate of volume LFO.
+    float volumeLFOdepth = 0.0f; ///< Depth of volume LFO.
+    
+    double djSampleRate; ///< Sample rate for processing.
+    
+    juce::dsp::Reverb reverb; ///< Reverb effect processor.
+    juce::dsp::Reverb::Parameters reverbParams; ///< Parameters for reverb effect.
+    
+    double reverbWetDryMix = 0.0f; ///< Reverb wet/dry mix amount.
+    
+    juce::dsp::Chorus<float> flanger; ///< Flanger effect processor.
+    
+    double flangerWetDryMix = 0.0f; ///< Flanger wet/dry mix amount.
+    
+    // ===========================================================
+    public:
+    /**
+     * @brief Constructor for DJAudioPlayer.
+     */
+    DJAudioPlayer();
+    
+    /**
+     * @brief Destructor for DJAudioPlayer.
+     */
+    ~DJAudioPlayer();
+    
+    juce::AudioTransportSource transportSource; ///< Handles audio transport functions.
+    juce::ResamplingAudioSource resampleSource{&transportSource, false, 2}; ///< Resampler for handling pitch changes.
+    
+    /**
+     * @brief Prepares the player to play audio.
+     * @param samplesPerBlockExpected Expected number of samples per block.
+     * @param sampleRate The sample rate of the audio stream.
+     */
+    void prepareToPlay (int samplesPerBlockExpected, double sampleRate) override;
+    
+    /**
+     * @brief Retrieves the next block of audio data.
+     * @param bufferToFill The buffer to be filled with audio data.
+     */
+    void getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill) override;
+    
+    /**
+     * @brief Releases audio resources when playback stops.
+     */
+    void releaseResources() override;
+    
+    /**
+     * @brief Loads an audio file from a URL.
+     * @param audioURL The URL of the audio file.
+     */
+    void loadURL(juce::URL audioURL);
+    
+    /**
+     * @brief Sets the gain (volume) of the audio.
+     * @param gain The gain value (0.0 - 1.0).
+     */
+    void setGain(double gain);
+    
+    /**
+     * @brief Sets the playback speed.
+     * @param ratio The speed ratio (1.0 is normal speed).
+     */
+    void setSpeed(double ratio);
+    
+    /**
+     * @brief Sets the playback position in seconds.
+     * @param posInSecs The position in seconds.
+     */
+    void setPosition(double posInSecs);
+    
+    /**
+     * @brief Sets the relative playback position.
+     * @param pos The relative position (0.0 - 1.0).
+     */
+    void setPositionRelative(double pos);
+    
+    /**
+     * ==============================================================
+     * Author: Jacques Thurling
+     * 13 Mar 2020
+     * ==============================================================
+     *
+     * @brief Sets the high-pass filter cutoff frequency.
+     * @param amount The cutoff frequency value.
+     */
+    void setHighPassFilterAmount(double amount);
+    
+    /**
+     * @brief Sets the low-pass filter cutoff frequency.
+     * @param amount The cutoff frequency value.
+     */
+    void setLowPassFilterAmount(double amount);
+    
+    /**
+     * @brief Sets the mid-band pass filter parameters.
+     * @param amount The filter amount.
+     */
+    void setMidBandPassFilterAmount(double amount);
+    
+    /**
+     * @brief Sets the reverb effect amount.
+     * @param amount The reverb mix amount.
+     */
+    void setReverbAmount(double amount);
+    
+    /**
+     * @brief Sets the flanger effect amount.
+     * @param amount The flanger mix amount.
+     */
+    void setFlangerAmount(double amount);
+    
+    /**
+     * @brief Sets the tremolo effect amount.
+     * @param amount The tremolo mix amount.
+     */
+    void setTremelo(double amount);
+    /// ==============================================================
+    
+    /**
+     * @brief Starts audio playback.
+     */
+    void start();
+    
+    /**
+     * @brief Stops audio playback.
+     */
+    void stop();
+    
+    /**
+     * @brief Gets the relative position of the playhead.
+     * @return The relative position (0.0 - 1.0).
+     */
+    double getPositionRelative();
+};
+/*
+ ==============================================================================
+ 
+ DeckGUI.h
+ Created: 29 Jan 2025 7:21:23am
+ Author:  Jacques Thurling
+ 
+ ==============================================================================
+ */
+
+#pragma once
+
+#include <JuceHeader.h>
+#include "DJAudioPlayer.h"
+#include "WaveformDisplay.h"
+#include "CustomLookAndFeel.h"
+#include "DeckWaveformDisplay.h"
+#include "CSVReader.h"
+
+//==============================================================================
+/**
+ * @class DeckGUI
+ * @brief A graphical user interface for a DJ deck, handling playback, effects, and waveform display.
+ */
+class DeckGUI  : public juce::Component,
+                 public juce::Button::Listener,
+                 public juce::Slider::Listener,
+                 public juce::FileDragAndDropTarget,
+                 public juce::Timer
+{
+public:
+    /**
+     * @brief Constructor for DeckGUI.
+     * @param _player Pointer to the DJAudioPlayer handling playback.
+     * @param formatManager Reference to an AudioFormatManager for handling formats.
+     * @param cache Reference to an AudioThumbnailCache for caching waveform thumbnails.
+     * @param deck_name Name of the deck.
+     * @param state Reference to the DeckState for storing deck information.
+     */
+    DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager,
+            juce::AudioThumbnailCache& cache, std::string deck_name, DeckState& state);
+    
+    /**
+     * @brief Destructor for DeckGUI.
+     */
+    ~DeckGUI() override;
+    
+    /**
+     * @brief Paints the graphical elements of the DeckGUI.
+     * @param g JUCE Graphics context.
+     */
+    void paint(juce::Graphics&) override;
+    
+    /**
+     * @brief Handles resizing of the component and child components.
+     */
+    void resized() override;
+    
+    /**
+     * @brief Handles button click events.
+     * @param button Pointer to the clicked button.
+     */
+    void buttonClicked(juce::Button* button) override;
+    
+    /**
+     * @brief Handles slider value changes.
+     * @param slider Pointer to the changed slider.
+     */
+    void sliderValueChanged(juce::Slider* slider) override;
+    
+    /**
+     * @brief Checks if the component is interested in dragged files.
+     * @param files Array of file paths.
+     * @return True if interested, false otherwise.
+     */
+    bool isInterestedInFileDrag(const juce::StringArray& files) override;
+    
+    /**
+     * @brief Handles file drop events.
+     * @param file Array of file paths.
+     * @param x X-coordinate of the drop location.
+     * @param y Y-coordinate of the drop location.
+     */
+    void filesDropped(const juce::StringArray& file, int x, int y) override;
+    
+    /**
+     * @brief Timer callback function for updating components.
+     */
+    void timerCallback() override;
+    
+    /**
+     * @brief Handles mouse press events.
+     * @param event Mouse event details.
+     */
+    void mouseDown(const juce::MouseEvent& event) override;
+    
+    /**
+     * @brief Handles mouse drag events.
+     * @param event Mouse event details.
+     */
+    void mouseDrag(const juce::MouseEvent& event) override;
+    
+    /**
+     * @brief Loads an audio file from a given URL.
+     * @param file The URL of the audio file.
+     */
+    void loadUrl(juce::URL file);
+    
+    /**
+     * ==============================================================
+     * Author: Jacques Thurling
+     * 13 Mar 2020
+     * ==============================================================
+     * @brief Sets the initial playback position.
+     * @param relativePosition The initial position as a normalized value between 0 and 1.
+     */
+    void setInitialPosition(double relativePosition);
+    
+    /**
+     * @brief Sets the deck state with a filename and position.
+     * @param fileName The name of the loaded file.
+     * @param position The playback position.
+     */
+    void setDeckState(std::string fileName, double position);
+    
+    /**
+     * @brief Sets the deck state with only the playback position.
+     * @param position The playback position.
+     */
+    void setDeckState(double position);
+    
+    private:
+    /**
+     * ==============================================================
+     * Author: Jacques Thurling
+     * 13 Mar 2020
+     * ==============================================================
+     */
+    
+    std::vector<std::unique_ptr<juce::LookAndFeel>> lookAndFeels;
+    
+    std::string deck_name;
+    DeckState& state;
+    
+    float rotationAngle = 0.0f;
+    float startAngle = 0.0f;
+    float initialRotationAngle = 0.0f;
+    
+    float initialRelativePosition = 0.0f;
+    
+    DJAudioPlayer* djAudioPlayer;
+    
+    juce::TextButton playButton;
+    juce::TextButton stopButton;
+    juce::TextButton loadButton;
+    
+    juce::Slider volumeSlider;
+    juce::Slider positionSlider;
+    juce::Slider speedSlider;
+    
+    juce::Slider reverb;
+    juce::Slider flanger;
+    juce::Slider cut;
+    
+    juce::Label reverbLabel;
+    juce::Label flangerLabel;
+    juce::Label lfoLabel;
+    juce::Label speedLabel;
+    
+    juce::Image deckImage;
+    juce::Image knobImage;
+    juce::Image backgroundImage;
+    juce::Image deck_face_image;
+    juce::Image deck_spinner_image;
+    
+    juce::Image play_image;
+    juce::Image stop_image;
+    
+    juce::Image deck_number_image;
+    juce::Image deck_overlay;
+    
+    juce::FileChooser fChooser {"Select a file..."};
+    
+    WaveformDisplay waveformDisplay;
+    DeckWaveformDisplay deckDisplay;
+    
+    std::unique_ptr<juce::ImageButton> playImageButton;
+    std::unique_ptr<juce::ImageButton> stopImageButton;
+    
+    bool play = false;
+    /// ==============================================================
+    
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DeckGUI)
+};
+/**
+ * =================================================================
+ * @file DeckWaveformDisplay.h
+ * @brief Declaration of the DeckWaveformDisplay class.
+ *
+ * This file declares the DeckWaveformDisplay class which is responsible for displaying
+ * an audio waveform for decks and handling related user interface events.
+ *
+ * Created: 22 Feb 2025 1:38:07pm
+ * Author: Jacques Thurling
+ */
+
+#pragma once
+
+#include <JuceHeader.h>
+
+/**
+ * @class DeckWaveformDisplay
+ * @brief A component that displays an audio waveform.
+ *
+ * The DeckWaveformDisplay class inherits from juce::Component for graphical interface
+ * capabilities and from juce::ChangeListener to react to change events.
+ */
+class DeckWaveformDisplay  : public juce::Component, public juce::ChangeListener
+{
+public:
+    /**
+     * @brief Constructs a DeckWaveformDisplay using an audio format manager and a thumbnail cache.
+     *
+     * This constructor initializes the waveform display with the necessary audio processing
+     * resources.
+     *
+     * @param formatManagerToUse Reference to a juce::AudioFormatManager for audio file handling.
+     * @param cache Reference to a juce::AudioThumbnailCache for caching audio thumbnails.
+     */
+    DeckWaveformDisplay(juce::AudioFormatManager& formatManagerToUse,
+                        juce::AudioThumbnailCache& cache);
+    
+    /**
+     * @brief Default constructor for DeckWaveformDisplay.
+     *
+     * Constructs a DeckWaveformDisplay with default settings.
+     */
+    DeckWaveformDisplay();
+    
+    /**
+     * @brief Destructor for DeckWaveformDisplay.
+     */
+    ~DeckWaveformDisplay() override;
+    
+    /**
+     * @brief Paints the waveform display.
+     *
+     * This method is called whenever the component needs to be redrawn.
+     *
+     * @param g The juce::Graphics context used for drawing.
+     */
+    void paint (juce::Graphics& g) override;
+    
+    /**
+     * @brief Handles component resizing.
+     *
+     * This method is invoked when the component's dimensions change, allowing for
+     * necessary adjustments to its layout or content.
+     */
+    void resized() override;
+    
+    /**
+     * @brief Callback for change events.
+     *
+     * Invoked when a change event is broadcasted by a juce::ChangeBroadcaster.
+     *
+     * @param source Pointer to the ChangeBroadcaster that triggered the event.
+     */
+    void changeListenerCallback (juce::ChangeBroadcaster *source) override;
+    
+    /**
+     * @brief Loads an audio file from a given URL.
+     *
+     * This method loads the audio file specified by the URL and updates the waveform display accordingly.
+     *
+     * @param url The URL from which to load the audio file.
+     */
+    void loadUrl(juce::URL url);
+    
+    /**
+     * @brief Sets the relative position of the playhead.
+     *
+     * Adjusts the display to indicate the current play position as a fraction of the total duration.
+     *
+     * @param pos A double value between 0.0 and 1.0 representing the relative playhead position.
+     */
+    void setPositionRelative(double pos);
+    
+private:
+    juce::AudioThumbnail audioThumbnail;  ///< Audio thumbnail for rendering the waveform.
+    
+    bool fileLoaded;   ///< Flag indicating whether an audio file has been successfully loaded.
+    double position;   ///< The current relative position of the playhead.
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DeckWaveformDisplay) ///< Prevents copying and enables leak detection.
+};
+/**
+ * =================================================================
+ * @file MainComponent.cpp
+ * @brief Implementation of the MainComponent class.
+ *
+ * This component sets up the main window of the application, initializes
+ * audio settings, and arranges the child components.
+ */
+
+#pragma once
+
+#include <JuceHeader.h>
+
+#include "DJAudioPlayer.h"
+#include "DeckGUI.h"
+#include "Playlist.h"
+#include "MixerView.h"
+#include "CSVReader.h"
+
+//==============================================================================
+/**
+ * MainComponent class represents the central component of the application.
+ * It manages the audio playback, GUI components, and user interactions.
+ */
+class MainComponent  : public juce::AudioAppComponent
+{
+    public:
+    //==============================================================================
+    /**
+     * Constructor: Initializes the MainComponent and sets up the necessary components.
+     */
+    MainComponent();
+    
+    /**
+     * Destructor: Cleans up resources when the MainComponent is destroyed.
+     */
+    ~MainComponent() override;
+    
+    //==============================================================================
+    /**
+     * Prepares the audio system for playback.
+     * Called before playback starts.
+     * @param samplesPerBlockExpected The expected number of samples per block.
+     * @param sampleRate The audio sample rate.
+     */
+    void prepareToPlay (int samplesPerBlockExpected, double sampleRate) override;
+    
+    /**
+     * Processes and provides the next block of audio data.
+     * @param bufferToFill The buffer that needs to be filled with audio data.
+     */
+    void getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill) override;
+    
+    /**
+     * Releases any allocated audio resources when playback stops.
+     */
+    void releaseResources() override;
+    
+    //==============================================================================
+    /**
+     * Handles painting of the component.
+     * @param g The graphics context used for drawing.
+     */
+    void paint (juce::Graphics& g) override;
+    
+    /**
+     * Handles resizing of the component and repositioning of child components.
+     */
+    void resized() override;
+    
+    private:
+    //==============================================================================
+    // Manages audio format readers.
+    juce::AudioFormatManager formatManager;
+    
+    // Caches audio thumbnails for faster waveform rendering.
+    juce::AudioThumbnailCache thumbnailCache {20};
+    
+    // Reads deck states from a CSV file.
+    CSVReader reader;
+    std::vector<DeckState> states = reader.readCSV();
+    
+    // First deck and its associated player.
+    DJAudioPlayer player1;
+    DeckGUI deck1 {&player1, formatManager, thumbnailCache, "deck_a", states[0]};
+    
+    // Second deck and its associated player.
+    DJAudioPlayer player2;
+    DeckGUI deck2 {&player2, formatManager, thumbnailCache, "deck_b", states[1]};
+    
+    // Mixer view that allows volume control and crossfading between decks.
+    MixerView mixerView{&player1, &player2};
+    
+    // Playlist component that manages track loading and display.
+    Playlist playlistComponent {formatManager, thumbnailCache, deck1, deck2, &states};
+    
+    // Mixer that combines audio signals from different sources.
+    juce::MixerAudioSource mixer;
+    
+    // JUCE macro to prevent copying and enable leak detection.
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
+};
+/**
+ * =================================================================
+ * @file MixerView.h
+ * @brief Header file for the MixerView component.
+ *
+ * This file declares the MixerView class, which provides a graphical interface for
+ * mixing audio from two DJAudioPlayer instances. It includes controls for volume,
+ * cross-fading, and filter adjustments, along with their corresponding labels.
+ *
+ * Created: 5 Feb 2025 5:14:06pm
+ * Author: Jacques Thurling
+ */
+
+#pragma once
+
+#include <JuceHeader.h>
+#include "DJAudioPlayer.h"
+#include "CustomLookAndFeel.h"
+#include "CSVReader.h"
+
+/**
+ * @class MixerView
+ * @brief Component for mixing audio between two DJAudioPlayer objects.
+ *
+ * The MixerView class creates a user interface for audio mixing, providing sliders for
+ * volume control, cross-fading, and various filters. Each slider is accompanied by a label,
+ * and a custom look and feel is applied for consistent styling.
+ */
+class MixerView  : public juce::Component, public juce::Slider::Listener
+{
+public:
+    /**
+     * @brief Constructs a new MixerView object.
+     *
+     * @param _player1 Pointer to the first DJAudioPlayer.
+     * @param _player2 Pointer to the second DJAudioPlayer.
+     */
+    MixerView(DJAudioPlayer* _player1, DJAudioPlayer* _player2);
+
+    /**
+     * @brief Destroys the MixerView object.
+     */
+    ~MixerView() override;
+    
+    /**
+     * @brief Paints the MixerView component.
+     *
+     * This method is responsible for drawing the background and any images associated
+     * with the MixerView.
+     *
+     * @param g The graphics context used for drawing.
+     */
+    void paint (juce::Graphics&) override;
+    
+    /**
+     * @brief Resizes the MixerView component.
+     *
+     * This method sets the bounds of all child components when the MixerView is resized.
+     */
+    void resized() override;
+    
+    /**
+     * @brief Handles slider value changes.
+     *
+     * This callback is invoked when any of the registered sliders change value, updating
+     * the corresponding parameters in the associated DJAudioPlayer instances.
+     *
+     * @param slider Pointer to the slider that triggered the event.
+     */
+    void sliderValueChanged(juce::Slider* slider) override;
+    
+private:
+    /// Vector storing custom look and feel objects for managing component styling.
+    std::vector<std::unique_ptr<juce::LookAndFeel>> lookAndFeels;
+    
+    /// Pointer to the first DJAudioPlayer.
+    DJAudioPlayer* djAudioPlayer1;
+    
+    /// Pointer to the second DJAudioPlayer.
+    DJAudioPlayer* djAudioPlayer2;
+    
+    /// Slider used for cross-fading between the two decks.
+    juce::Slider mixerSlider;
+    
+    /// Label for the cross-fade slider.
+    juce::Label mixerLabel;
+    
+    /// Volume sliders for Deck A and Deck B.
+    juce::Slider volumeSliderA;
+    juce::Slider volumeSliderB;
+    
+    /// Labels for the volume sliders.
+    juce::Label volumeSliderALabel;
+    juce::Label volumeSliderBLabel;
+    
+    /// Sliders for Deck A filter adjustments (High, Mid, Low).
+    juce::Slider trackAHighPassSlider;
+    juce::Slider trackAMidPassSlider;
+    juce::Slider trackALowPassSlider;
+    
+    /// Labels for the Deck A filter sliders.
+    juce::Label trackAHighPassSliderLabel;
+    juce::Label trackAMidPassSliderLabel;
+    juce::Label trackALowPassSliderLabel;
+    
+    /// Sliders for Deck B filter adjustments (High, Mid, Low).
+    juce::Slider trackBHighPassSlider;
+    juce::Slider trackBMidPassSlider;
+    juce::Slider trackBLowPassSlider;
+    
+    /// Labels for the Deck B filter sliders.
+    juce::Label trackBHighPassSliderLabel;
+    juce::Label trackBMidPassSliderLabel;
+    juce::Label trackBLowPassSliderLabel;
+    
+    /// Background image used in the MixerView.
+    juce::Image otodecksImage;
+    
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MixerView)
+};
+/*
+ ============================================================================
+ 
+ Playlist.h
+ Created: 4 Feb 2025 6:12:32pm
+ Author:  Jacques Thurling
+ 
+ ==============================================================================
+ */
+
+#pragma once
+
+#include <JuceHeader.h>
+#include "WaveformDisplay.h"
+#include "DeckGUI.h"
+
+/**
+ * @struct PlaylistFileInformation
+ * @brief Stores file information for playlist items.
+ */
+struct PlaylistFileInformation {
+    juce::File file; ///< File object representing the playlist item.
+    juce::URL fileUrl; ///< URL to the file.
+};
+
+/**
+ * @class Playlist
+ * @brief Manages a playlist of audio files, providing UI and drag-and-drop support.
+ */
+class Playlist : public juce::Component, public juce::TableListBoxModel, public juce::Button::Listener, public juce::FileDragAndDropTarget
+{
+public:
+    /**
+     * @brief Constructor for the Playlist class.
+     * @param formatManager Reference to the audio format manager.
+     * @param cache Reference to the audio thumbnail cache.
+     * @param deck1 Reference to the first deck.
+     * @param deck2 Reference to the second deck.
+     * @param _states Pointer to the vector storing deck states.
+     */
+    Playlist(juce::AudioFormatManager& formatManager, juce::AudioThumbnailCache& cache, DeckGUI& deck1, DeckGUI& deck2, std::vector<DeckState> *_states);
+    
+    /**
+     * @brief Destructor for the Playlist class.
+     */
+    ~Playlist() override;
+    
+    /**
+     * @brief Paints the component.
+     * @param g Graphics context.
+     */
+    void paint (juce::Graphics&) override;
+    
+    /**
+     * @brief Handles component resizing.
+     */
+    void resized() override;
+    
+    /**
+     * @brief Returns the number of rows in the playlist table.
+     * @return Number of rows.
+     */
+    int getNumRows() override;
+    
+    /**
+     * @brief Paints the background of a row.
+     * @param g Graphics context.
+     * @param rowNumber Row index.
+     * @param width Row width.
+     * @param height Row height.
+     * @param rowIsSelected Whether the row is selected.
+     */
+    void paintRowBackground(juce::Graphics&, int rowNumber, int width, int height, bool rowIsSelected) override;
+    
+    /**
+     * @brief Paints a cell in the table.
+     * @param g Graphics context.
+     * @param rowNumber Row index.
+     * @param columnId Column ID.
+     * @param width Cell width.
+     * @param height Cell height.
+     * @param rowIsSelected Whether the row is selected.
+     */
+    void paintCell(juce::Graphics&, int rowNumber, int columnId, int width, int height, bool rowIsSelected) override;
+    
+    /**
+     * @brief Handles cell clicks.
+     * @param rowNumber Row index.
+     * @param columnId Column ID.
+     * @param event Mouse event.
+     */
+    virtual void cellClicked (int rowNumber, int columnId, const juce::MouseEvent&);
+    
+    /**
+     * @brief Refreshes the component for a table cell.
+     * @param rowNumber Row index.
+     * @param columnId Column ID.
+     * @param isRowSelected Whether the row is selected.
+     * @param existingComponentToUpdate Existing component to update.
+     * @return Pointer to the updated component.
+     */
+    juce::Component* refreshComponentForCell (int rowNumber, int columnId, bool isRowSelected, Component* existingComponentToUpdate) override;
+    
+    /**
+     * @brief Checks if the component is interested in file drag events.
+     * @param files List of dragged files.
+     * @return True if interested, false otherwise.
+     */
+    bool isInterestedInFileDrag (const juce::StringArray& files) override;
+    
+    /**
+     * @brief Handles files being dropped onto the component.
+     * @param file List of dropped files.
+     * @param x X position.
+     * @param y Y position.
+     */
+    void filesDropped (const juce::StringArray& file, int x, int y) override;
+    
+    /**
+     * @brief Handles button clicks.
+     * @param button Pointer to the clicked button.
+     */
+    void buttonClicked(juce::Button* button) override;
+    
+    /**
+     * @brief Called when the parent hierarchy changes.
+     */
+    void parentHierarchyChanged() override
+    {
+        setDeckStates();
+    }
+    
+    /**
+     * @brief Sets the deck states based on the playlist.
+     */
+    void setDeckStates();
+    
+private:
+    juce::AudioThumbnailCache& audioThumbnail; ///< Reference to the audio thumbnail cache.
+    juce::AudioFormatManager& audioFormatManager; ///< Reference to the audio format manager.
+    
+    std::vector<DeckState> *states; ///< Pointer to the vector of deck states.
+    
+    DeckGUI& deck1; ///< Reference to the first deck.
+    DeckGUI& deck2; ///< Reference to the second deck.
+    
+    juce::TableListBox tableComponent; ///< Table component for displaying the playlist.
+    
+    std::vector<PlaylistFileInformation> playlistFiles; ///< List of files in the playlist.
+    
+    /**
+     * @brief Splits a string by a given delimiter.
+     * @param s String to split.
+     * @param delimiter Character delimiter.
+     * @return Vector of split strings.
+     */
+    std::vector<std::string> split(const std::string &s, char delimiter);
+    
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Playlist)
+};
+/*
+ ==============================================================================
+ 
+ WaveformDisplay.h
+ Created: 30 Jan 2025 6:39:29pm
+ Author:  Jacques Thurling
+ 
+ ==============================================================================
+ */
+
+#pragma once
+
+#include <JuceHeader.h>
+
+/**
+ * @class WaveformDisplay
+ * @brief A component that displays an audio waveform and manages playback visualization.
+ */
+class WaveformDisplay : public juce::Component, public juce::ChangeListener
+{
+public:
+    /**
+     * @brief Constructor for WaveformDisplay.
+     * @param formatManagerToUse Reference to the audio format manager.
+     * @param cacheToUse Reference to the audio thumbnail cache.
+     */
+    WaveformDisplay(juce::AudioFormatManager& formatManagerToUse, juce::AudioThumbnailCache& cacheToUse);
+    
+    /**
+     * @brief Destructor for WaveformDisplay.
+     */
+    ~WaveformDisplay() override;
+    
+    /**
+     * @brief Paints the waveform display.
+     * @param g Graphics context.
+     */
+    void paint(juce::Graphics&) override;
+    
+    /**
+     * @brief Handles component resizing.
+     */
+    void resized() override;
+    
+    /**
+     * @brief Callback function triggered when the audio thumbnail changes.
+     * @param source Pointer to the ChangeBroadcaster.
+     */
+    void changeListenerCallback(juce::ChangeBroadcaster *source) override;
+    
+    /**
+     * @brief Loads an audio file from a URL and generates its waveform.
+     * @param url URL of the audio file.
+     */
+    void loadUrl(juce::URL url);
+    
+    /**
+     * @brief Sets the relative position of the playhead within the waveform.
+     * @param pos New playback position (0.0 - 1.0).
+     */
+    void setPositionRelative(double pos);
+    
+private:
+    juce::AudioThumbnail audioThumbnail; ///< Handles waveform visualization.
+    bool fileLoaded; ///< Indicates whether an audio file is loaded.
+    double position; ///< Stores the current playback position.
+    
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(WaveformDisplay)
+};
+/**
+ * =================================================================
+ * @file CSVReader.cpp
+ * @brief Implementation of the CSVReader class.
+ *
+ * This file contains the implementation for reading CSV files,
+ * tokenizing CSV lines, and converting CSV data into DeckState structures.
+ *
+ * Created: 24 Feb 2025 9:44:39am
+ * Author: Jacques Thurling
+ */
+
+#include <JuceHeader.h>
+#include "CSVReader.h"
+#include <fstream>
+
+/**
+ * @brief Constructor for CSVReader.
+ *
+ * Initializes the CSVReader object. In this constructor, any necessary
+ * initializations for reading CSV files can be added.
+ */
+CSVReader::CSVReader()
+{
+    // Constructor body left intentionally empty.
+}
+
+/**
+ * @brief Reads and parses the CSV file containing deck state information.
+ *
+ * This method locates the CSV file within the application's Resources directory,
+ * opens the file, and reads its contents line by line. Each line is tokenized,
+ * and the tokens are used to construct a DeckState structure. All valid DeckState
+ * objects are collected and returned in a vector.
+ *
+ * @return std::vector<DeckState> A vector containing all deck states parsed from the CSV file.
+ */
+std::vector<DeckState> CSVReader::readCSV() {
+    // Determine the application's directory.
+    juce::File appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile)
+                              .getParentDirectory()
+                              .getParentDirectory();
+    // Construct the path to the CSV file.
+    juce::File stateFile = appDir.getChildFile("Resources/dj_program_state.csv");
+    
+    // Output the full path of the state file.
+    std::cout << stateFile.getFullPathName().toStdString() << std::endl;
+    
+    // Log a message if the file exists.
+    if (stateFile.exists()) {
+        std::cerr << "File exists" << std::endl;
+    }
+    
+    // Open the CSV file using an ifstream.
+    std::ifstream csvFile{stateFile.getFullPathName().toStdString()};
+    
+    // Check if the file stream is valid.
+    if (!csvFile) {
+        std::cerr << "Failed to open file" << std::endl;
+    }
+    
+    std::string line;
+    
+    // Log messages indicating the loading process.
+    std::cout << "=====================" << std::endl;
+    std::cout << " Loading file data" << std::endl;
+    std::cout << "=====================" << std::endl;
+    
+    // Vector to store the parsed DeckState objects.
+    std::vector<DeckState> deckStates;
+    
+    // Check if the file is open before processing.
+    if (csvFile.is_open()) {
+        // Read each line of the CSV file.
+        while (std::getline(csvFile, line)) {
+            try {
+                // Tokenize the current line using comma as the separator.
+                std::vector<std::string> tokens = tokenise(line, ',');
+                
+                // Debug message: Convert the second token to a double.
+                DBG("" << std::stod(tokens[1]));
+                
+                // Construct a DeckState object from the tokens.
+                DeckState state {
+                    tokens[0],
+                    std::stod(tokens[1]),
+                    tokens[2]
+                };
+                
+                // Add the DeckState object to the vector.
+                deckStates.push_back(state);
+            } catch (const std::exception &e) {
+                // Log a message if there is an error parsing the line.
+                std::cout << "CSVReader::readCSV bad data" << std::endl;
+            }
+        }
+    }
+    
+    // Close the CSV file.
+    csvFile.close();
+    
+    // Return the vector of DeckState objects.
+    return deckStates;
+}
+
+/**
+ * @brief Tokenizes a CSV line into individual fields.
+ *
+ * This static method splits a given CSV line into tokens using the specified separator.
+ * It iterates through the line to extract each token and returns a vector of tokens.
+ *
+ * @param csvLine A string representing a line from a CSV file.
+ * @param separator The character used to separate tokens in the CSV line.
+ * @return std::vector<std::string> A vector containing the tokens extracted from the CSV line.
+ */
+std::vector<std::string> CSVReader::tokenise(std::string csvLine, char separator) {
+    // Vector to store tokens.
+    std::vector<std::string> tokens;
+    
+    // Variables to store the starting and ending positions of tokens.
+    signed int start, end;
+    // String to store each individual token.
+    std::string token;
+    
+    // Find the first character that is not the separator.
+    start = csvLine.find_first_not_of(separator, 0);
+    
+    // Loop to extract all tokens.
+    do {
+        // Find the position of the next separator.
+        end = csvLine.find_first_of(separator, start);
+        
+        // Break out of the loop if at the end of the string or if no token is found.
+        if (start == csvLine.length() || start == end)
+            break;
+        
+        // Extract the token between start and end positions.
+        if (end >= 0)
+            token = csvLine.substr(start, end - start);
+        // Extract the token from start to the end of the string.
+        else
+            token = csvLine.substr(start, csvLine.length() - start);
+        
+        // Add the token to the vector.
+        tokens.push_back(token);
+        
+        // Update the start position for the next token.
+        start = end + 1;
+    } while (end > 0);
+    
+    // Return the vector of tokens.
+    return tokens;
+}
+/*
+ ==============================================================================
+ 
+ CustomLookAndFeel.cpp
+ Created: 17 Feb 2025 4:13:42pm
+ Author:  Jacques Thurling
+ 
+ ==============================================================================
+ */
+
+#include <JuceHeader.h>
+#include "CustomLookAndFeel.h"
+
+/**
+ * @class CustomLookAndFeel
+ * @brief A custom LookAndFeel class for JUCE components.
+ */
+
+//==============================================================================
+/**
+ * @brief Constructor for CustomLookAndFeel.
+ * @param _scaleFactor Scaling factor for UI elements.
+ */
+CustomLookAndFeel::CustomLookAndFeel(float _scaleFactor) : scaleFactor(_scaleFactor)
+{
+    // Initialize image resources
+    juce::File appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
+    
+    juce::File imageFile = appDir.getChildFile("Resources/knob.png");
+    knobImage = juce::ImageCache::getFromFile(imageFile);
+    
+    appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
+    imageFile = appDir.getChildFile("Resources/slider_thumb.png");
+    
+    thumbImage = juce::ImageCache::getFromFile(imageFile);
+}
+
+/**
+ * @brief Destructor for CustomLookAndFeel.
+ */
+CustomLookAndFeel::~CustomLookAndFeel()
+{
+}
+
+/**
+ * @brief Draws a rotary slider using a custom knob image.
+ * @param g Graphics context to draw into.
+ * @param x X position of the slider.
+ * @param y Y position of the slider.
+ * @param width Width of the slider.
+ * @param height Height of the slider.
+ * @param sliderPosProportional Normalized slider position (0.0 - 1.0).
+ * @param rotaryStartAngle Starting angle of the rotary control.
+ * @param rotaryEndAngle Ending angle of the rotary control.
+ * @param slider Reference to the JUCE Slider component.
+ */
+void CustomLookAndFeel::drawRotarySlider(juce::Graphics& g, int x, int y, int width, int height, float sliderPosProportional,
+                                         float rotaryStartAngle, float rotaryEndAngle, juce::Slider& slider) {
+    const float rotation = rotaryStartAngle + sliderPosProportional * (rotaryEndAngle - rotaryStartAngle);
+    const float centerX = x + width * 0.5f;
+    const float centerY = y + height * 0.5f;
+    const float radius = std::min(width, height) * 0.5f;
+    
+    if (knobImage.isValid()) {
+        juce::AffineTransform transform = juce::AffineTransform::translation(-knobImage.getWidth() * 0.5f, -knobImage.getHeight() * 0.5f)
+            .scaled(scaleFactor, scaleFactor)
+            .rotated(rotation)
+            .translated(centerX, centerY);
+        
+        g.drawImageTransformed(knobImage, transform);
+    }
+}
+
+/**
+ * @brief Draws a linear slider with a custom thumb image.
+ * @param g Graphics context to draw into.
+ * @param x X position of the slider.
+ * @param y Y position of the slider.
+ * @param width Width of the slider.
+ * @param height Height of the slider.
+ * @param sliderPos Current position of the slider.
+ * @param minSliderPos Minimum position of the slider.
+ * @param maxSliderPos Maximum position of the slider.
+ * @param style Slider style (horizontal or vertical).
+ * @param slider Reference to the JUCE Slider component.
+ */
+void CustomLookAndFeel::drawLinearSlider(juce::Graphics& g,
+                                         int x,
+                                         int y,
+                                         int width,
+                                         int height,
+                                         float sliderPos,
+                                         float minSliderPos,
+                                         float maxSliderPos,
+                                         juce::Slider::SliderStyle style,
+                                         juce::Slider& slider) {
+    if (style == juce::Slider::LinearHorizontal || style == juce::Slider::LinearVertical)
+    {
+        if (sliderImage.isValid())
+        {
+            g.drawImageWithin(sliderImage, x, y, width, height,
+                              juce::RectanglePlacement::fillDestination);
+        }
+        else
+        {
+            g.setColour(juce::Colours::darkgrey);
+            const int trackThickness = 4;
+            
+            if (style == juce::Slider::LinearHorizontal)
+            {
+                int trackY = y + (height / 2) - (trackThickness / 2);
+                g.fillRect(x, trackY, width, trackThickness);
+            }
+            else if (style == juce::Slider::LinearVertical)
+            {
+                int trackX = x + (width / 2) - (trackThickness / 2);
+                g.fillRect(trackX, y, trackThickness, height);
+            }
+        }
+        
+        if (thumbImage.isValid())
+        {
+            int thumbWidth  = thumbImage.getWidth() / 2;
+            int thumbHeight = thumbImage.getHeight() / 2;
+            
+            int thumbX = 0;
+            int thumbY = 0;
+            
+            if (style == juce::Slider::LinearHorizontal)
+            {
+                thumbX = static_cast<int>(sliderPos - thumbWidth / 2);
+                thumbY = y + (height / 2) - (thumbHeight / 2);
+            }
+            else
+            {
+                thumbX = x + (width / 2) - (thumbWidth / 2);
+                thumbY = static_cast<int>(sliderPos - thumbHeight / 2);
+            }
+            
+            g.drawImageWithin(thumbImage, thumbX, thumbY, thumbWidth, thumbHeight,
+                              juce::RectanglePlacement::centred);
+        }
+    }
+}
+/**
+ * @file DJAudioPlayer.cpp
+ * @brief Implementation of the DJAudioPlayer class for audio processing.
+ *
+ * This class handles audio playback, filtering, and effects such as reverb,
+ * flanger, and tremolo.
+ *
+ * @author Matthew
+ * @date 13 Mar 2020
+ */
+
+#include "DJAudioPlayer.h"
+
+/**
+ * @brief Constructor for DJAudioPlayer.
+ *
+ * Initializes reverb and flanger effect parameters.
+ */
+DJAudioPlayer::DJAudioPlayer()
+{
+    reverbParams.roomSize = 0.9f;
+    reverbParams.damping = 0.5f;
+    reverbParams.wetLevel = reverbWetDryMix;
+    reverbParams.dryLevel = 1.0f - reverbWetDryMix;
+    reverbParams.width = 5.0f;
+    reverbParams.freezeMode = 0.0f;
+    
+    reverb.setParameters(reverbParams);
+    
+    // Flanger
+    flanger.setCentreDelay(0.001f);
+    flanger.setRate(0.1f);
+    flanger.setDepth(1.0f);
+    flanger.setFeedback(0.7f);
+    flanger.setMix(flangerWetDryMix);
+}
+
+/**
+ * @brief Destructor for DJAudioPlayer.
+ */
+DJAudioPlayer::~DJAudioPlayer()
+{}
+
+/**
+ * @brief Prepares the audio player for playback.
+ * @param samplesPerBlockExpected Number of samples per block expected.
+ * @param sampleRate The sample rate of the audio.
+ */
+void DJAudioPlayer::prepareToPlay (int samplesPerBlockExpected, double sampleRate)
+{
+    formatManager.registerBasicFormats();
+    transportSource.prepareToPlay(samplesPerBlockExpected, sampleRate);
+    resampleSource.prepareToPlay(samplesPerBlockExpected, sampleRate);
+    
+    /**
+     * ==============================================================
+     * Author: Jacques Thurling
+     * 13 Mar 2020
+     * ==============================================================
+     */
+    // HighPassfilter setup
+    highpassFilter.reset();
+    auto hpCoeffs = juce::dsp::IIR::Coefficients<float>::makeHighPass(sampleRate, hpCutoff, hpQualityFactor);
+    *highpassFilter.coefficients = *hpCoeffs;
+    
+    // Lowpass filter setup
+    lowpassFilter.reset();
+    auto lpCoeffs = juce::dsp::IIR::Coefficients<float>::makeLowPass(sampleRate, lpCutoff, lpQualityFactor);
+    *lowpassFilter.coefficients = *lpCoeffs;
+    
+    juce::dsp::ProcessSpec spec;
+    spec.sampleRate = sampleRate;
+    spec.maximumBlockSize = samplesPerBlockExpected;
+    spec.numChannels = 1;
+    
+    midBandPassFilter.reset();
+    midBandPassFilter.prepare(spec);
+    auto midCoeffs = juce::dsp::IIR::Coefficients<float>::makeBandPass(sampleRate, midCutoff, midQualityFactor);
+    *midBandPassFilter.coefficients = *midCoeffs;
+    
+    // Setup reverb processing
+    juce::dsp::ProcessSpec reverbSpec;
+    reverbSpec.sampleRate = sampleRate;
+    reverbSpec.maximumBlockSize = samplesPerBlockExpected;
+    reverbSpec.numChannels = 1;
+    reverb.prepare(reverbSpec);
+    
+    // Flanger spec
+    juce::dsp::ProcessSpec flangerSpec;
+    flangerSpec.sampleRate = sampleRate;
+    flangerSpec.maximumBlockSize = samplesPerBlockExpected;
+    flangerSpec.numChannels = 1;
+    flanger.prepare(flangerSpec);
+    /// ==============================================================
+    
+    // Store sample rate for later processing needed
+    djSampleRate = sampleRate;
+}
+
+/**
+ * @brief Processes the next block of audio data.
+ * @param bufferToFill The buffer containing the audio data to process.
+ */
+void DJAudioPlayer::getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill)
+{
+    // First get the next Audio Block to process
+    resampleSource.getNextAudioBlock(bufferToFill);
+    
+    /**
+     * ==============================================================
+     * Author: Jacques Thurling
+     * 13 Mar 2020
+     * ==============================================================
+     */
+    
+    juce::AudioBuffer<float> dryBuffer;
+    dryBuffer.makeCopyOf(*bufferToFill.buffer);
+    
+    // Wrap the buffer in a dsp::AudioBlock to use the DSP module
+    auto dryBlock = juce::dsp::AudioBlock<float>(dryBuffer);
+    // Create a processing context that tells the filter to process in-place
+    juce::dsp::ProcessContextReplacing<float> dryContext(dryBlock);
+    
+    // ================ HIGHPASS ===================
+    highpassFilter.process(dryContext);
+    // =============================================
+    
+    // ================ LOWPASS ====================
+    lowpassFilter.process(dryContext);
+    // =============================================
+    
+    // ================ BANDPASS ===================
+    // Wrap the buffer in a dsp::AudioBlock to use the DSP module
+    auto wetBlock = juce::dsp::AudioBlock<float>(*bufferToFill.buffer).getSubBlock(bufferToFill.startSample, bufferToFill.numSamples);
+    // Create a processing context that tells the filter to process in-place
+    juce::dsp::ProcessContextReplacing<float> wetContext(wetBlock);
+    midBandPassFilter.process(wetContext);
+    // =============================================
+    
+    // Blend the dry (original) and wet (filtered) signals based on bandpassMix:
+    // A bandpassMix of 0.0 means fully dry, 1.0 means fully wet.
+    const int numChannels = bufferToFill.buffer->getNumChannels();
+    const int numSamples  = bufferToFill.buffer->getNumSamples();
+    
+    for (int channel = 0; channel < numChannels; ++channel)
+    {
+        const float* dry  = dryBuffer.getReadPointer(channel);
+        float* wet = bufferToFill.buffer->getWritePointer(channel);
+        for (int sample = 0; sample < numSamples; ++sample)
+        {
+            wet[sample] = dry[sample] * (1.0f - (float)midBandPassMix)
+            + wet[sample] * (float)midBandPassMix;
+        }
+    }
+    
+    // ================ REVERB =====================
+    // Process the buffer through the reverb
+    juce::dsp::AudioBlock<float> reverbBlock(*bufferToFill.buffer);
+    juce::dsp::ProcessContextReplacing<float> reverbContext(reverbBlock);
+    reverb.process(reverbContext);
+    // =============================================
+    
+    // ================ FILTER =====================
+    auto flangerBlock = juce::dsp::AudioBlock<float>(*bufferToFill.buffer).getSubBlock(bufferToFill.startSample, bufferToFill.numSamples);
+    juce::dsp::ProcessContextReplacing<float> flangerContext(flangerBlock);
+    flanger.process(flangerContext);
+    // =============================================
+    
+    // ================ TREMOLO =====================
+    const int samples = bufferToFill.numSamples;
+    const int channels = bufferToFill.buffer->getNumChannels();
+    
+    for (int sample = 0; sample < numSamples; ++sample) {
+        float lfoValue = (std::sin(volumeLFOPhase) + 1.0f) * 0.5f;
+        
+        float currentGain = (1.0f - volumeLFOdepth) + (volumeLFOdepth * lfoValue);
+        
+        for (int channel = 0; channel < channels; ++channel) {
+            float* channelData = bufferToFill.buffer->getWritePointer(channel);
+            channelData[sample] *= currentGain;
+        }
+        
+        volumeLFOPhase += juce::MathConstants<float>::twoPi * volumeLFOrate / djSampleRate;
+        
+        if (volumeLFOPhase >= juce::MathConstants<float>::twoPi) {
+            volumeLFOPhase -= juce::MathConstants<float>::twoPi;
+        }
+    }
+    /// ==============================================================
+}
+
+/**
+ * @brief Releases allocated resources.
+ */
+void DJAudioPlayer::releaseResources()
+{
+    transportSource.releaseResources();
+    resampleSource.releaseResources();
+}
+
+/**
+ * @brief Loads an audio file from a given URL.
+ * @param audioURL The URL of the audio file to load.
+ */
+void DJAudioPlayer::loadURL(juce::URL audioURL)
+{
+    auto* reader = formatManager.createReaderFor(audioURL.createInputStream(false));
+    if (reader != nullptr) // good file!
+    {
+        std::unique_ptr<juce::AudioFormatReaderSource> newSource (new juce::AudioFormatReaderSource (reader,
+                                                                                                     true));
+        transportSource.setSource (newSource.get(), 0, nullptr, reader->sampleRate);
+        readerSource.reset (newSource.release());
+    }
+}
+
+/**
+ * @brief Sets the playback gain.
+ * @param gain The gain value (0.0 to 1.0).
+ */
+void DJAudioPlayer::setGain(double gain)
+{
+    if (gain < 0 || gain > 1.0)
+    {
+        std::cout << "DJAudioPlayer::setGain gain should be between 0 and 1" << std::endl;
+    }
+    else {
+        transportSource.setGain(gain);
+    }
+    
+}
+
+/**
+ * @brief Sets the playback speed.
+ * @param ratio The speed ratio (0.0 to 100.0).
+ */
+void DJAudioPlayer::setSpeed(double ratio)
+{
+    if (ratio < 0 || ratio > 100.0)
+    {
+        std::cout << "DJAudioPlayer::setSpeed ratio should be between 0 and 100" << std::endl;
+    }
+    else {
+        resampleSource.setResamplingRatio(ratio);
+    }
+}
+
+/**
+ * @brief Sets the playback position.
+ * @param posInSecs Position in seconds.
+ */
+void DJAudioPlayer::setPosition(double posInSecs)
+{
+    transportSource.setPosition(posInSecs);
+}
+
+/**
+ * @brief Sets the playback position relative to the track length.
+ * @param pos Relative position (0.0 to 1.0).
+ */
+void DJAudioPlayer::setPositionRelative(double pos)
+{
+    if (pos < 0 || pos > 1.0)
+    {
+        std::cout << "DJAudioPlayer::setPositionRelative pos should be between 0 and 1" << std::endl;
+    }
+    else {
+        double posInSecs = transportSource.getLengthInSeconds() * pos;
+        setPosition(posInSecs);
+    }
+}
+
+/**
+ * @brief Starts audio playback.
+ */
+void DJAudioPlayer::start()
+{
+    transportSource.start();
+}
+
+/**
+ * @brief Stops audio playback.
+ */
+void DJAudioPlayer::stop()
+{
+    transportSource.stop();
+}
+
+/**
+ * @brief Gets the playback position relative to the track length.
+ * @return Relative position (0.0 to 1.0).
+ */
+double DJAudioPlayer::getPositionRelative()
+{
+    return transportSource.getCurrentPosition() / transportSource.getLengthInSeconds();
+}
+
+/**
+ * ==============================================================
+ * Author: Jacques Thurling
+ * 13 Mar 2020
+ * ==============================================================
+ *
+ * @brief Sets the high-pass filter amount.
+ * @param amount Normalized cutoff frequency factor (0.0 to 1.0).
+ */
+void DJAudioPlayer::setHighPassFilterAmount(double amount) {
+    hpCutoff = 2000 * amount;
+    
+    if (djSampleRate > 0) {
+        auto coeffs = juce::dsp::IIR::Coefficients<float>::makeHighPass(djSampleRate, hpCutoff, hpQualityFactor);
+        *highpassFilter.coefficients = *coeffs;
+    }
+    
+    std::cout << hpCutoff << " " << amount << std::endl;
+}
+
+/**
+ * @brief Sets the low-pass filter amount.
+ * @param amount Normalized cutoff frequency factor (0.0 to 1.0).
+ */
+void DJAudioPlayer::setLowPassFilterAmount(double amount) {
+    lpCutoff = 20000.0f * amount;
+    
+    if (djSampleRate > 0) {
+        auto lpCoeffs = juce::dsp::IIR::Coefficients<float>::makeLowPass(djSampleRate, lpCutoff, lpQualityFactor);
+        *lowpassFilter.coefficients = *lpCoeffs;
+    }
+    
+    std::cout << lpCutoff << " " << amount << " " << djSampleRate * 0.5 << std::endl;
+}
+
+/**
+ * @brief Sets the band-pass filter mix amount.
+ * @param amount Mix amount (0.0 to 1.0).
+ */
+void DJAudioPlayer::setMidBandPassFilterAmount(double amount) {
+    midBandPassMix = amount;
+}
+
+/**
+ * @brief Sets the reverb effect amount.
+ * @param amount The amount of reverb (0.0 to 1.0).
+ */
+void DJAudioPlayer::setReverbAmount(double amount) {
+    reverbParams.wetLevel = amount;
+    reverbParams.dryLevel = 1.0f - amount;
+    reverb.setParameters(reverbParams);
+}
+
+/**
+ * @brief Sets the amount of flanger effect.
+ * @param amount The mix amount of the flanger effect (0.0 to 1.0).
+ */
+void DJAudioPlayer::setFlangerAmount(double amount) {
+    flanger.setMix(amount);
+}
+
+/**
+ * @brief Sets the tremolo effect depth.
+ * @param amount The depth of the tremolo effect (0.0 to 1.0).
+ */
+void DJAudioPlayer::setTremelo(double amount) {
+    volumeLFOdepth = amount;
+}
+/// ==============================================================
+/*
+ ============================================================================
+ 
+ DeckGUI.cpp
+ Created: 29 Jan 2025 7:21:23am
+ Author:  Jacques Thurling
+ 
+ ==============================================================================
+ */
+
+#include <JuceHeader.h>
+#include "DeckGUI.h"
+
+//==============================================================================
+/**
+ * @brief Constructor for DeckGUI.
+ * @param _player Pointer to the DJAudioPlayer handling playback.
+ * @param formatManager Reference to an AudioFormatManager for handling formats.
+ * @param cache Reference to an AudioThumbnailCache for caching waveform thumbnails.
+ * @param _deckname Name of the deck.
+ * @param _state Reference to the DeckState for storing deck information.
+ */
+DeckGUI::DeckGUI(DJAudioPlayer* _player, juce::AudioFormatManager& formatManager, juce::AudioThumbnailCache& cache, std::string _deckname, DeckState& _state)
+: djAudioPlayer(_player), waveformDisplay(formatManager, cache), deck_name(_deckname), deckDisplay(formatManager, cache), state(_state)
+{
+    /**
+     * ==============================================================
+     * Author: Jacques Thurling
+     * 13 Mar 2020
+     * ==============================================================
+     */
+    auto customLookAndFeel = std::make_unique<CustomLookAndFeel>(0.6f);
+    
+    // In your constructor, you should add any child components, and
+    // initialise any special settings that your component needs.
+    juce::File appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
+    
+    juce::File imageFile = appDir.getChildFile("Resources/deck_spinner.png");
+    deckImage = juce::ImageCache::getFromFile(imageFile);
+    
+    imageFile = appDir.getChildFile("Resources/deck_face.png");
+    deck_face_image = juce::ImageCache::getFromFile(imageFile);
+    
+    imageFile = appDir.getChildFile("Resources/background_info.png");
+    backgroundImage = juce::ImageCache::getFromFile(imageFile);
+    
+    imageFile = appDir.getChildFile("Resources/stop.png");
+    stop_image = juce::ImageCache::getFromFile(imageFile);
+    
+    imageFile = appDir.getChildFile("Resources/overlay.png");
+    deck_overlay = juce::ImageCache::getFromFile(imageFile);
+    
+    imageFile = appDir.getChildFile("Resources/play.png");
+    play_image = juce::ImageCache::getFromFile(imageFile);
+    
+    playImageButton = std::make_unique<juce::ImageButton>("playImageButton");
+    
+    // Set images for the button states: normal, over, and down.
+    playImageButton->setImages(true, true, true,
+                               play_image, 1.0f, juce::Colours::transparentBlack,  // normal state image
+                               play_image, 1.0f, juce::Colours::transparentBlack,  // over state image
+                               play_image, 1.0f, juce::Colours::transparentBlack); // down state image
+    
+    // Make the button visible in your component
+    addAndMakeVisible(playImageButton.get());
+    
+    stopImageButton = std::make_unique<juce::ImageButton>("stopImageButton");
+    
+    // Set images for the button states: normal, over, and down.
+    stopImageButton->setImages(true, true, true,
+                               stop_image, 1.0f, juce::Colours::transparentBlack,  // normal state image
+                               stop_image, 1.0f, juce::Colours::transparentBlack,  // over state image
+                               stop_image, 1.0f, juce::Colours::transparentBlack); // down state image
+    
+    // Make the button visible in your component
+    addAndMakeVisible(stopImageButton.get());
+    
+    imageFile = appDir.getChildFile("Resources/" + deck_name + ".png");
+    deck_number_image = juce::ImageCache::getFromFile(imageFile);
+    
+    speedSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
+    
+    speedSlider.setLookAndFeel(customLookAndFeel.get());
+    
+    reverb.setSliderStyle(juce::Slider::SliderStyle::Rotary);
+    flanger.setSliderStyle(juce::Slider::SliderStyle::Rotary);
+    cut.setSliderStyle(juce::Slider::SliderStyle::Rotary);
+    
+    reverb.setLookAndFeel(customLookAndFeel.get());
+    flanger.setLookAndFeel(customLookAndFeel.get());
+    cut.setLookAndFeel(customLookAndFeel.get());
+    
+    // Labels
+    reverbLabel.setText("Reverb", juce::dontSendNotification);
+    reverbLabel.setFont(juce::Font("Helvetica", 14.0f, juce::Font::plain));
+    reverbLabel.attachToComponent(&reverb, false);
+    reverbLabel.setColour(juce::Label::textColourId, juce::Colour {50,50,50});
+    
+    flangerLabel.setText("Flanger", juce::dontSendNotification);
+    flangerLabel.setFont(juce::Font("Helvetica", 14.0f, juce::Font::plain));
+    flangerLabel.attachToComponent(&flanger, false);
+    flangerLabel.setColour(juce::Label::textColourId, juce::Colour {50,50,50});
+    
+    lfoLabel.setText("LFO Modulation", juce::dontSendNotification);
+    lfoLabel.setFont(juce::Font("Helvetica", 14.0f, juce::Font::plain));
+    lfoLabel.attachToComponent(&cut, false);
+    lfoLabel.setColour(juce::Label::textColourId, juce::Colour {50,50,50});
+    
+    speedLabel.setText("Speed", juce::dontSendNotification);
+    speedLabel.setFont(juce::Font("Helvetica", 14.0f, juce::Font::plain));
+    speedLabel.attachToComponent(&speedSlider, false);
+    speedLabel.setColour(juce::Label::textColourId, juce::Colour {50,50,50});
+    
+    volumeSlider.setRange(0, 1);
+    positionSlider.setRange(0, 1);
+    speedSlider.setRange(0.1, 2);
+    
+    reverb.setRange(0, 1);
+    flanger.setRange(0, 1);
+    cut.setRange(0, 1);
+    
+    playButton.setButtonText("PLAY");
+    stopButton.setButtonText("STOP");
+    loadButton.setButtonText("LOAD");
+    
+    /// ==================================================================
+    
+    speedSlider.setValue(1.0f);
+    
+    addAndMakeVisible(loadButton);
+    addAndMakeVisible(volumeSlider);
+    addAndMakeVisible(positionSlider);
+    addAndMakeVisible(speedSlider);
+    addAndMakeVisible(waveformDisplay);
+    addAndMakeVisible(reverb);
+    addAndMakeVisible(flanger);
+    addAndMakeVisible(cut);
+    addAndMakeVisible(deckDisplay);
+    
+    loadButton.addListener(this);
+    volumeSlider.addListener(this);
+    positionSlider.addListener(this);
+    speedSlider.addListener(this);
+    
+    /**
+     * ==============================================================
+     * Author: Jacques Thurling
+     * 13 Mar 2020
+     * ==============================================================
+     */
+    
+    playImageButton->addListener(this);
+    stopImageButton->addListener(this);
+    
+    reverb.addListener(this);
+    flanger.addListener(this);
+    cut.addListener(this);
+    
+    speedSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    
+    reverb.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    flanger.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    cut.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    
+    startTimer(10);
+    
+    lookAndFeels.emplace_back(std::move(customLookAndFeel));
+    /// ============================================================
+}
+
+/**
+ * @brief Destructor for DeckGUI.
+ */
+DeckGUI::~DeckGUI()
+{
+}
+
+/**
+ * @brief Renders the deck GUI components.
+ * @param g JUCE Graphics context.
+ */
+void DeckGUI::paint (juce::Graphics& g)
+{
+    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));   // clear the background
+    /**
+     * ==============================================================
+     * Author: Jacques Thurling
+     * 13 Mar 2020
+     * ==============================================================
+     */
+    if (deckImage.isValid()) {
+        auto bounds = getLocalBounds().toFloat();
+        auto imageBounds = deckImage.getBounds().toFloat();
+        auto faceBounds = deck_face_image.getBounds().toFloat();
+        
+        // Calculate individual scale factors.
+        float scaleX = bounds.getWidth() / (imageBounds.getWidth() * 2);
+        float scaleY = bounds.getHeight() / (imageBounds.getHeight() * 2);
+        
+        // Use the minimum scale factor to preserve the aspect ratio.
+        float uniformScale = std::min(scaleX, scaleY);
+        
+        // Optionally, translate the image such that it is centered.
+        auto imageCentre = imageBounds.getCentre();
+        auto boundsCentre = bounds.getCentre();
+        auto faceCentre = faceBounds.getCentre();
+        
+        // Create a transform: first translate the image so its centre is at the origin,
+        // then apply the uniform scaling and rotation,
+        // and finally translate it to the component's centre.
+        auto transform = juce::AffineTransform::translation(-imageCentre.x, -imageCentre.y)
+            .scaled(uniformScale)
+            .rotated(rotationAngle)
+            .translated(boundsCentre.x, boundsCentre.y);
+        
+        auto deck_face_transform = juce::AffineTransform::translation(-faceCentre.x, -faceCentre.y)
+            .scaled(uniformScale)
+            .translated(boundsCentre.x, boundsCentre.y);
+        
+        // Draw the transformed image.
+        g.drawImage(backgroundImage, getLocalBounds().toFloat(), juce::RectanglePlacement::stretchToFit);
+        g.drawImage(deck_number_image, (getWidth()/8) * 6, (getHeight()/8) + 20,
+                    deck_number_image.getWidth()/3, deck_number_image.getHeight()/3,
+                    0, 0, deck_number_image.getWidth(), deck_number_image.getHeight());
+        g.drawImageTransformed(deckImage, transform);
+        g.drawImageTransformed(deck_face_image, deck_face_transform);
+        deckDisplay.setBounds(getWidth()/2 - 100, (getHeight()/8) * 4 - 50, 200, getHeight()/8);
+    }
+    
+    if (!play)
+    {
+        playImageButton->setVisible(true);
+        stopImageButton->setVisible(false);
+    }
+    else
+    {
+        playImageButton->setVisible(false);
+        stopImageButton->setVisible(true);
+    }
+    /// ====================================================
+}
+
+/**
+ * @brief Resizes and positions the components within the DeckGUI.
+ */
+void DeckGUI::resized()
+{
+    // This method is where you should set the bounds of any child
+    // components that your component contains..
+    float rowH = getHeight()/8;
+    
+    /**
+     * ==============================================================
+     * Author: Jacques Thurling
+     * 13 Mar 2020
+     * ==============================================================
+     */
+    
+    // Speed slider
+    speedSlider.setBounds((getWidth()/8) * 7, rowH * 4, (getWidth()/8), rowH * 4);
+    speedLabel.setBounds(speedSlider.getX() + 15, speedSlider.getY() - 20, 200, 20);
+    
+    // Effects sliders
+    reverb.setBounds((getWidth()/8) * 2, rowH * 7 - 20, (getWidth()/8), rowH);
+    reverbLabel.setBounds(reverb.getX() + 10, reverb.getY() + 90, 200, 20);
+    
+    flanger.setBounds((getWidth()/8) * 4 - 20, rowH * 7 - 20, (getWidth()/8), rowH);
+    flangerLabel.setBounds(flanger.getX() + 18, flanger.getY() + 90, 200, 20);
+    
+    cut.setBounds((getWidth()/8) * 6 - 40, rowH * 7 - 20, (getWidth()/8), rowH);
+    lfoLabel.setBounds(cut.getX() - 10, cut.getY() + 90, 200, 20);
+    
+    waveformDisplay.setBounds(0, 0, getWidth(), rowH);
+    
+    playImageButton->setBounds(10, rowH * 7 - 50, play_image.getWidth(), play_image.getHeight());
+    stopImageButton->setBounds(10, rowH * 7 - 50, stop_image.getWidth(), stop_image.getHeight());
+    /// ======================================================
+}
+
+/**
+ * @brief Handles button clicks for playback and loading.
+ * @param button Pointer to the button that was clicked.
+ */
+void DeckGUI::buttonClicked(juce::Button* button) {
+    if (button == playImageButton.get()) {
+        djAudioPlayer->start();
+        play = true;
+    }
+    
+    if (button == stopImageButton.get()) {
+        DBG("DeckGUI::buttonClicked: You clicked the stop button");
+        djAudioPlayer->stop();
+        play = false;
+    }
+    
+    if (button == &loadButton) {
+        auto fileChooserFlags = juce::FileBrowserComponent::canSelectFiles;
+        
+        fChooser.launchAsync(fileChooserFlags, [this](const juce::FileChooser& chooser){
+            auto chosenFile = chooser.getResult();
+            djAudioPlayer->loadURL(juce::URL{chosenFile});
+            waveformDisplay.loadUrl(juce::URL{chosenFile});
+        });
+    }
+}
+
+/**
+ * @brief Handles slider value changes.
+ * @param slider Pointer to the slider that was changed.
+ */
+void DeckGUI::sliderValueChanged(juce::Slider* slider) {
+    if (slider == &volumeSlider) {
+        DBG("DeckGUI::sliderValueChanged : Gain slider value changed: " << volumeSlider.getValue());
+        djAudioPlayer->setGain(slider->getValue());
+    }
+    
+    if (slider == &positionSlider) {
+        djAudioPlayer->setPositionRelative(slider->getValue());
+    }
+    
+    if (slider == &speedSlider) {
+        djAudioPlayer->setSpeed(slider->getValue());
+    }
+    
+    /**
+     * ==============================================================
+     * Author: Jacques Thurling
+     * 13 Mar 2020
+     * ==============================================================
+     */
+    if (slider == &reverb) {
+        djAudioPlayer->setReverbAmount(slider->getValue());
+    }
+    
+    if (slider == &flanger) {
+        djAudioPlayer->setFlangerAmount(slider->getValue());
+    }
+    
+    if (slider == &cut) {
+        djAudioPlayer->setTremelo(slider->getValue());
+    }
+}
+
+/**
+ * @brief Determines if the playlist accepts dragged files.
+ *
+ * @param files List of dragged file paths.
+ * @return Always returns true.
+ */
+bool DeckGUI::isInterestedInFileDrag(const juce::StringArray& files) {
+    std::cout << "DeckGUI::isInterestedInFileDrag" << std::endl;
+    return true;
+}
+
+/**
+ * @brief Handles drag-and-drop file loading.
+ * @param files Array of file paths.
+ * @param x X coordinate of the drop location.
+ * @param y Y coordinate of the drop location.
+ */
+void DeckGUI::filesDropped(const juce::StringArray& files, int x, int y) {
+    for (juce::String file : files) {
+        juce::URL fileUrl = juce::URL{juce::File{file}};
+        
+        djAudioPlayer->loadURL(fileUrl);
+        waveformDisplay.loadUrl(fileUrl);
+        return;
+    }
+}
+
+void DeckGUI::mouseDown(const juce::MouseEvent& event) {
+    DBG("Mouse is down");
+    auto centre = getLocalBounds().toFloat().getCentre();
+    startAngle = std::atan2(event.position.y - centre.y, event.position.x - centre.x);
+    initialRotationAngle = rotationAngle;
+    
+    initialRelativePosition = djAudioPlayer->getPositionRelative();
+}
+
+void DeckGUI::mouseDrag(const juce::MouseEvent& event) {
+    auto centre = getLocalBounds().toFloat().getCentre();
+    float currentAngle = std::atan2(event.position.y - centre.y, event.position.x - centre.x);
+    float deltaAngle = currentAngle - startAngle;
+    rotationAngle = initialRotationAngle + deltaAngle;
+    
+    float deltaRelative = deltaAngle / (2 * juce::MathConstants<float>::pi);
+    float newRelative = juce::jlimit(0.0f, 1.0f, initialRelativePosition + deltaRelative);
+    
+    djAudioPlayer->setPositionRelative(newRelative);
+    
+    repaint();
+}
+
+/**
+ * @brief Timer callback function that updates the deck display.
+ */
+void DeckGUI::timerCallback()
+{
+    //std::cout << "DeckGUI::timerCallback" << std::endl;
+    waveformDisplay.setPositionRelative(djAudioPlayer->getPositionRelative());
+    deckDisplay.setPositionRelative(djAudioPlayer->getPositionRelative());
+    
+    if (play) {
+        rotationAngle += 0.02f;
+        
+        if (rotationAngle >= juce::MathConstants<float>::twoPi) {
+            rotationAngle -= juce::MathConstants<float>::twoPi;
+        }
+        
+        repaint();
+    }
+    
+    setDeckState(djAudioPlayer->getPositionRelative());
+}
+
+void DeckGUI::loadUrl(juce::URL fileURL) {
+    djAudioPlayer->loadURL(fileURL);
+    waveformDisplay.loadUrl(fileURL);
+    deckDisplay.loadUrl(fileURL);
+    
+    setDeckState(fileURL.getFileName().toStdString(), djAudioPlayer->getPositionRelative());
+}
+/**
+ * ==============================================================
+ * Author: Jacques Thurling
+ * 13 Mar 2020
+ * ==============================================================
+ */
+
+void DeckGUI::setDeckState(std::string fileName, double newPosition) {
+    state.file_name = fileName;
+    state.position = newPosition;
+}
+
+void DeckGUI::setDeckState(double newPosition) {
+    state.position = newPosition;
+}
+
+/// ==============================================================
+/**
+ * =================================================================
+ * @file DeckWaveformDisplay.cpp
+ * @brief Implementation of the DeckWaveformDisplay component.
+ *
+ * This file implements the waveform display for a deck, handling painting,
+ * audio file loading, and change notifications.
+ *
+ * Created: 22 Feb 2025 1:38:07pm
+ * Author: Jacques Thurling
+ */
+
+#include <JuceHeader.h>
+#include "DeckWaveformDisplay.h"
+
+//==============================================================================
+/**
+ * @brief Constructs a new DeckWaveformDisplay object.
+ *
+ * This constructor initializes the audio thumbnail with a resolution of 1000 samples,
+ * registers a change listener, and sets up the initial state.
+ *
+ * @param formatManagerToUse Reference to the AudioFormatManager used to manage audio formats.
+ * @param cache Reference to the AudioThumbnailCache used for caching thumbnail data.
+ */
+DeckWaveformDisplay::DeckWaveformDisplay(juce::AudioFormatManager& formatManagerToUse,
+                                         juce::AudioThumbnailCache& cache)
+    : audioThumbnail(1000, formatManagerToUse, cache),
+      fileLoaded(false),
+      position(0)
+{
+    audioThumbnail.addChangeListener(this);
+}
+
+/**
+ * @brief Destructor for DeckWaveformDisplay.
+ */
+DeckWaveformDisplay::~DeckWaveformDisplay()
+{
+}
+
+/**
+ * @brief Paints the component.
+ *
+ * This function clears the background and either draws the waveform
+ * or displays placeholder text if no file has been loaded. When a file is loaded,
+ * it draws a partially transparent gradient over the waveform.
+ *
+ * @param g The graphics context used for drawing.
+ */
+void DeckWaveformDisplay::paint (juce::Graphics& g)
+{
+    g.fillAll (juce::Colour {44, 44, 44});   // clear the background
+    g.setColour (juce::Colours::grey);
+
+    if (fileLoaded)
+    {
+        g.beginTransparencyLayer(0.5f);
+
+        // Define a gradient for the waveform display
+        juce::ColourGradient gradient {
+            juce::Colour {0, 183, 235}.withAlpha(0.0f), getWidth() / 1.0f, getHeight() / 1.0f,
+            juce::Colour {0, 183, 235}.withAlpha(1.0f), 0.0f, 0.0f,
+            true
+        };
+
+        g.setGradientFill(gradient);
+        g.setColour (juce::Colour {0, 183, 235});
+        audioThumbnail.drawChannel(g,
+                                   getLocalBounds(),
+                                   audioThumbnail.getTotalLength() * position,
+                                   audioThumbnail.getTotalLength() * position + .5,
+                                   0,
+                                   1.0f);
+        g.endTransparencyLayer();
+    }
+    else
+    {
+        g.setFont (20.0f);
+        g.drawText ("File not loaded...", getLocalBounds(),
+                    juce::Justification::centred, true);
+    }
+}
+
+/**
+ * @brief Handles component resizing.
+ *
+ * This method is called when the component is resized. It should be used
+ * to adjust the bounds of any child components.
+ */
+void DeckWaveformDisplay::resized()
+{
+    // Adjust the bounds of child components here, if any.
+}
+
+/**
+ * @brief Loads an audio file from the specified URL.
+ *
+ * This function clears the current audio thumbnail and attempts to load a new
+ * audio source from the provided URL.
+ *
+ * @param url The URL from which to load the audio file.
+ */
+void DeckWaveformDisplay::loadUrl(juce::URL url)
+{
+    audioThumbnail.clear();
+    fileLoaded = audioThumbnail.setSource(new juce::URLInputSource(url));
+}
+
+/**
+ * @brief Callback for change events.
+ *
+ * This function is called when a change event is broadcasted by the audio thumbnail.
+ * It triggers a repaint of the component.
+ *
+ * @param source Pointer to the ChangeBroadcaster that triggered the event.
+ */
+void DeckWaveformDisplay::changeListenerCallback (juce::ChangeBroadcaster *source)
+{
+    std::cout << "wfd: change received! " << std::endl;
+    repaint();
+}
+
+/**
+ * @brief Sets the playback position relative to the audio length.
+ *
+ * This function updates the internal position (if it has changed) and repaints
+ * the component to reflect the new position.
+ *
+ * @param pos The new relative position (expected range is 0.0 to 1.0).
+ */
+void DeckWaveformDisplay::setPositionRelative(double pos)
+{
+    if (pos != position)
+    {
+        position = pos;
+        repaint();
+    }
+}
+/*
+ ==============================================================================
+ 
+ This file contains the basic startup code for a JUCE application.
+ 
+ ==============================================================================
+ */
+
+#include <JuceHeader.h>
+#include "MainComponent.h"
+
+//==============================================================================
+class New_DJApplication  : public juce::JUCEApplication
+{
+    public:
+    //==============================================================================
+    New_DJApplication() {}
+    
+    const juce::String getApplicationName() override       { return ProjectInfo::projectName; }
+    const juce::String getApplicationVersion() override    { return ProjectInfo::versionString; }
+    bool moreThanOneInstanceAllowed() override             { return true; }
+    
+    //==============================================================================
+    void initialise (const juce::String& commandLine) override
+    {
+        // This method is where you should put your application's initialisation code..
+        
+        mainWindow.reset (new MainWindow (getApplicationName()));
+    }
+    
+    void shutdown() override
+    {
+        // Add your application's shutdown code here..
+        
+        mainWindow = nullptr; // (deletes our window)
+    }
+    
+    //==============================================================================
+    void systemRequestedQuit() override
+    {
+        // This is called when the app is being asked to quit: you can ignore this
+        // request and let the app carry on running, or call quit() to allow the app to close.
+        quit();
+    }
+    
+    void anotherInstanceStarted (const juce::String& commandLine) override
+    {
+        // When another instance of the app is launched while this one is running,
+        // this method is invoked, and the commandLine parameter tells you what
+        // the other instance's command-line arguments were.
+    }
+    
+    //==============================================================================
+    /*
+     This class implements the desktop window that contains an instance of
+     our MainComponent class.
+     */
+    class MainWindow    : public juce::DocumentWindow
+    {
+        public:
+        MainWindow (juce::String name)
+        : DocumentWindow (name,
+                          juce::Desktop::getInstance().getDefaultLookAndFeel()
+                          .findColour (juce::ResizableWindow::backgroundColourId),
+                          DocumentWindow::allButtons)
+        {
+            setUsingNativeTitleBar (true);
+            setContentOwned (new MainComponent(), true);
+            
+#if JUCE_IOS || JUCE_ANDROID
+            setFullScreen (true);
+#else
+            setResizable (true, true);
+            centreWithSize (getWidth(), getHeight());
+#endif
+            
+            setVisible (true);
+        }
+        
+        void closeButtonPressed() override
+        {
+            // This is called when the user tries to close this window. Here, we'll just
+            // ask the app to quit when this happens, but you can change this to do
+            // whatever you need.
+            JUCEApplication::getInstance()->systemRequestedQuit();
+        }
+        
+        /* Note: Be careful if you override any DocumentWindow methods - the base
+         class uses a lot of them, so by overriding you might break its functionality.
+         It's best to do all your work in your content component instead, but if
+         you really have to override any DocumentWindow methods, make sure your
+         subclass also calls the superclass's method.
+         */
+        
+        private:
+        JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainWindow)
+    };
+    
+    private:
+    std::unique_ptr<MainWindow> mainWindow;
+};
+
+//==============================================================================
+// This macro generates the main() routine that launches the app.
+START_JUCE_APPLICATION (New_DJApplication)
+/**
+ * =================================================================
+ * @file MainComponent.cpp
+ * @brief Implementation of the MainComponent class.
+ *
+ * This component sets up the main window of the application, initializes
+ * audio settings, and arranges the child components.
+ */
+
+#include "MainComponent.h"
+
+/**
+ * @brief Constructs a MainComponent object.
+ *
+ * Sets the window size, handles audio permission requests,
+ * configures audio channels, and adds the child components to the main window.
+ */
+MainComponent::MainComponent()
+{
+    // Set the size of the main component (width: 1920, height: 1080 pixels).
+    setSize (1920, 1080);
+    
+    // Check if runtime permission is required for recording audio.
+    // If required but not yet granted, request permission and set audio channels based on the result.
+    if (juce::RuntimePermissions::isRequired (juce::RuntimePermissions::recordAudio)
+        && !juce::RuntimePermissions::isGranted (juce::RuntimePermissions::recordAudio))
+    {
+        juce::RuntimePermissions::request (juce::RuntimePermissions::recordAudio,
+                                           [&] (bool granted) { setAudioChannels (granted ? 2 : 0, 2); });
+    }
+    else
+    {
+        // If permission is not required or is already granted, initialize with 1 input and 1 output channel.
+        setAudioChannels (1, 1);
+    }
+    
+    // Add child components and make them visible.
+    addAndMakeVisible(deck1);
+    addAndMakeVisible(deck2);
+    
+    /**
+     * ==============================================================
+     * Author: Jacques Thurling
+     * 13 Mar 2020
+     * ==============================================================
+     */
+    addAndMakeVisible(mixerView);
+    addAndMakeVisible(playlistComponent);
+    /// ==============================================================
+}
+
+/**
+ * @brief Destructor for MainComponent.
+ *
+ * Shuts down the audio device and releases audio resources.
+ */
+MainComponent::~MainComponent()
+{
+    shutdownAudio();
+}
+
+/**
+ * @brief Prepares the audio system for playback.
+ *
+ * Called before playback starts to configure the audio mixer with expected settings.
+ *
+ * @param samplesPerBlockExpected The expected number of samples per audio block.
+ * @param sampleRate The audio sample rate.
+ */
+void MainComponent::prepareToPlay (int samplesPerBlockExpected, double sampleRate)
+{
+    // Add two audio players as input sources for the mixer.
+    mixer.addInputSource(&player1, false);
+    mixer.addInputSource(&player2, false);
+    
+    // Prepare the mixer with the expected block size and sample rate.
+    mixer.prepareToPlay(samplesPerBlockExpected, sampleRate);
+}
+
+/**
+ * @brief Provides the next block of audio data.
+ *
+ * Delegates the task of filling the audio buffer to the mixer.
+ *
+ * @param bufferToFill Structure containing the audio buffer to be filled.
+ */
+void MainComponent::getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill)
+{
+    mixer.getNextAudioBlock(bufferToFill);
+}
+
+/**
+ * @brief Releases audio resources.
+ *
+ * Removes all inputs from the mixer and releases resources for the mixer and audio players.
+ */
+void MainComponent::releaseResources()
+{
+    mixer.removeAllInputs();
+    mixer.releaseResources();
+    player1.releaseResources();
+    player2.releaseResources();
+}
+
+/**
+ * @brief Renders the component.
+ *
+ * Fills the background with a solid grey color and serves as a placeholder for any additional drawing code.
+ *
+ * @param g The graphics context used for drawing.
+ */
+void MainComponent::paint (juce::Graphics& g)
+{
+    g.fillAll (juce::Colours::grey);
+    // Additional drawing code can be added here if needed.
+}
+
+/**
+ * @brief Handles component resizing.
+ *
+ * Adjusts the positions and sizes of all child components when the main component is resized.
+ */
+void MainComponent::resized()
+{
+    // Set bounds for deck1: positioned at the left.
+    deck1.setBounds(0, 0, (getWidth() / 8) * 3, (getHeight() / 5) * 4);
+    
+    // Set bounds for deck2: positioned at the right.
+    deck2.setBounds((getWidth() / 8) * 5, 0, (getWidth() / 8) * 3, (getHeight() / 5) * 4);
+    
+    // Set bounds for mixerView: positioned in the center.
+    mixerView.setBounds((getWidth() / 8) * 3, 0, (getWidth() / 8) * 2, (getHeight() / 5) * 4);
+    
+    // Set bounds for playlistComponent: positioned at the bottom.
+    playlistComponent.setBounds(0, (getHeight() / 5) * 4, getWidth(), (getHeight() / 5) * 1);
+}
+/**
+ * =================================================================
+ * @file MixerView.cpp
+ * @brief Implementation of the MixerView component.
+ *
+ * This file implements the MixerView component that manages the audio mixing
+ * controls and filters for two DJ audio players. It includes setup for sliders,
+ * labels, and a background image.
+ *
+ * Created: 5 Feb 2025 5:14:06pm
+ * Author: Jacques Thurling
+ */
+
+#include <JuceHeader.h>
+#include "MixerView.h"
+
+//==============================================================================
+/**
+ * @brief Constructs a new MixerView object.
+ *
+ * This constructor initializes the mixer view by setting up various sliders for volume,
+ * cross-fading, and filter controls. It also configures labels, applies a custom look
+ * and feel, and loads a background image.
+ *
+ * @param _player1 Pointer to the first DJAudioPlayer object.
+ * @param _player2 Pointer to the second DJAudioPlayer object.
+ */
+MixerView::MixerView(DJAudioPlayer* _player1, DJAudioPlayer* _player2)
+    : djAudioPlayer1(_player1), djAudioPlayer2(_player2)
+{
+    // Create a custom look and feel with a specified transparency factor.
+    auto customLookAndFeel = std::make_unique<CustomLookAndFeel>(0.6f);
+    
+    // Set slider styles for volume sliders.
+    volumeSliderA.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
+    volumeSliderB.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
+    
+    // Apply the custom look and feel to the volume and mixer sliders.
+    volumeSliderA.setLookAndFeel(customLookAndFeel.get());
+    volumeSliderB.setLookAndFeel(customLookAndFeel.get());
+    mixerSlider.setLookAndFeel(customLookAndFeel.get());
+    
+    // Set slider styles for track filter controls (rotary style).
+    trackAHighPassSlider.setSliderStyle(juce::Slider::SliderStyle::Rotary);
+    trackAMidPassSlider.setSliderStyle(juce::Slider::SliderStyle::Rotary);
+    trackALowPassSlider.setSliderStyle(juce::Slider::SliderStyle::Rotary);
+    
+    trackBHighPassSlider.setSliderStyle(juce::Slider::SliderStyle::Rotary);
+    trackBMidPassSlider.setSliderStyle(juce::Slider::SliderStyle::Rotary);
+    trackBLowPassSlider.setSliderStyle(juce::Slider::SliderStyle::Rotary);
+    
+    // Apply custom look and feel to the track filter sliders.
+    trackAHighPassSlider.setLookAndFeel(customLookAndFeel.get());
+    trackAMidPassSlider.setLookAndFeel(customLookAndFeel.get());
+    trackALowPassSlider.setLookAndFeel(customLookAndFeel.get());
+    
+    trackBHighPassSlider.setLookAndFeel(customLookAndFeel.get());
+    trackBMidPassSlider.setLookAndFeel(customLookAndFeel.get());
+    trackBLowPassSlider.setLookAndFeel(customLookAndFeel.get());
+    
+    // Remove text boxes from sliders.
+    mixerSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    volumeSliderA.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    volumeSliderB.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    
+    trackAHighPassSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    trackAMidPassSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    trackALowPassSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    
+    trackBHighPassSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    trackBMidPassSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    trackBLowPassSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    
+    // Set ranges for the mixer and volume sliders.
+    mixerSlider.setRange(0, 1);
+    volumeSliderA.setRange(0, 1);
+    volumeSliderB.setRange(0, 1);
+    
+    // Set ranges for the track filter sliders.
+    trackAHighPassSlider.setRange(0.1, 1);
+    trackAMidPassSlider.setRange(0, 1);
+    trackALowPassSlider.setRange(0.1, 0.99);
+    
+    trackBHighPassSlider.setRange(0.1, 1);
+    trackBMidPassSlider.setRange(0, 1);
+    trackBLowPassSlider.setRange(0.1, 0.99);
+    
+    // Configure labels for the mixer and volume sliders.
+    mixerLabel.setText("Cross-Fade", juce::dontSendNotification);
+    mixerLabel.setFont(juce::Font("Helvetica", 16.0f, juce::Font::plain));
+    mixerLabel.attachToComponent(&mixerSlider, false);
+    mixerLabel.setColour(juce::Label::textColourId, juce::Colour {50,50,50});
+    
+    volumeSliderALabel.setText("Volume Deck A", juce::dontSendNotification);
+    volumeSliderALabel.setFont(juce::Font("Helvetica", 16.0f, juce::Font::plain));
+    volumeSliderALabel.attachToComponent(&volumeSliderA, false);
+    volumeSliderALabel.setColour(juce::Label::textColourId, juce::Colour {50,50,50});
+    
+    volumeSliderBLabel.setText("Volume Deck B", juce::dontSendNotification);
+    volumeSliderBLabel.setFont(juce::Font("Helvetica", 16.0f, juce::Font::plain));
+    volumeSliderBLabel.attachToComponent(&volumeSliderB, false);
+    volumeSliderBLabel.setColour(juce::Label::textColourId, juce::Colour {50,50,50});
+    
+    // Configure labels for track A filter sliders.
+    trackAHighPassSliderLabel.setText("Deck A - High", juce::dontSendNotification);
+    trackAHighPassSliderLabel.setFont(juce::Font("Helvetica", 14.0f, juce::Font::plain));
+    trackAHighPassSliderLabel.attachToComponent(&trackAHighPassSlider, false);
+    trackAHighPassSliderLabel.setColour(juce::Label::textColourId, juce::Colour {50,50,50});
+    
+    trackAMidPassSliderLabel.setText("Deck A - Mid", juce::dontSendNotification);
+    trackAMidPassSliderLabel.setFont(juce::Font("Helvetica", 14.0f, juce::Font::plain));
+    trackAMidPassSliderLabel.attachToComponent(&trackAMidPassSlider, false);
+    trackAMidPassSliderLabel.setColour(juce::Label::textColourId, juce::Colour {50,50,50});
+    
+    trackALowPassSliderLabel.setText("Deck A - Low", juce::dontSendNotification);
+    trackALowPassSliderLabel.setFont(juce::Font("Helvetica", 14.0f, juce::Font::plain));
+    trackALowPassSliderLabel.attachToComponent(&trackALowPassSlider, false);
+    trackALowPassSliderLabel.setColour(juce::Label::textColourId, juce::Colour {50,50,50});
+    
+    // Configure labels for track B filter sliders.
+    trackBHighPassSliderLabel.setText("Deck B - High", juce::dontSendNotification);
+    trackBHighPassSliderLabel.setFont(juce::Font("Helvetica", 14.0f, juce::Font::plain));
+    trackBHighPassSliderLabel.attachToComponent(&trackBHighPassSlider, false);
+    trackBHighPassSliderLabel.setColour(juce::Label::textColourId, juce::Colour {50,50,50});
+    
+    trackBMidPassSliderLabel.setText("Deck B - Mid", juce::dontSendNotification);
+    trackBMidPassSliderLabel.setFont(juce::Font("Helvetica", 14.0f, juce::Font::plain));
+    trackBMidPassSliderLabel.attachToComponent(&trackBMidPassSlider, false);
+    trackBMidPassSliderLabel.setColour(juce::Label::textColourId, juce::Colour {50,50,50});
+    
+    trackBLowPassSliderLabel.setText("Deck B - Low", juce::dontSendNotification);
+    trackBLowPassSliderLabel.setFont(juce::Font("Helvetica", 14.0f, juce::Font::plain));
+    trackBLowPassSliderLabel.attachToComponent(&trackBLowPassSlider, false);
+    trackBLowPassSliderLabel.setColour(juce::Label::textColourId, juce::Colour {50,50,50});
+    
+    // Add sliders and labels to the component.
+    addAndMakeVisible(mixerSlider);
+    addAndMakeVisible(mixerLabel);
+    
+    addAndMakeVisible(volumeSliderA);
+    addAndMakeVisible(volumeSliderB);
+    
+    addAndMakeVisible(trackAHighPassSlider);
+    addAndMakeVisible(trackAMidPassSlider);
+    addAndMakeVisible(trackALowPassSlider);
+    
+    addAndMakeVisible(trackBHighPassSlider);
+    addAndMakeVisible(trackBMidPassSlider);
+    addAndMakeVisible(trackBLowPassSlider);
+    
+    // Set default slider values.
+    mixerSlider.setValue(0.5f);
+    volumeSliderA.setValue(0.5f);
+    volumeSliderB.setValue(0.5f);
+    
+    // Register this object as a listener for slider events.
+    volumeSliderA.addListener(this);
+    volumeSliderB.addListener(this);
+    mixerSlider.addListener(this);
+    
+    trackAHighPassSlider.addListener(this);
+    trackAMidPassSlider.addListener(this);
+    trackALowPassSlider.addListener(this);
+    
+    trackBHighPassSlider.addListener(this);
+    trackBMidPassSlider.addListener(this);
+    trackBLowPassSlider.addListener(this);
+    
+    // Store the custom look and feel for proper lifetime management.
+    lookAndFeels.emplace_back(std::move(customLookAndFeel));
+    
+    // Load the background image from the application's resource directory.
+    juce::File appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile)
+                            .getParentDirectory().getParentDirectory();
+    
+    juce::File imageFile = appDir.getChildFile("Resources/otodecks.png");
+    otodecksImage = juce::ImageCache::getFromFile(imageFile);
+}
+
+/**
+ * @brief Destructor for MixerView.
+ */
+MixerView::~MixerView()
+{
+}
+
+/**
+ * @brief Paints the MixerView component.
+ *
+ * This method fills the background with a solid color and draws the background image
+ * centered at the top of the component.
+ *
+ * @param g The graphics context used for drawing.
+ */
+void MixerView::paint (juce::Graphics& g)
+{
+    // Fill the background with a light grey color.
+    g.fillAll (juce::Colour {233, 233, 233});
+    
+    // Draw the background image centered horizontally at y-coordinate 20.
+    g.drawImage(otodecksImage, (getWidth()/2) - ((otodecksImage.getWidth()/3)/2), 20,
+                otodecksImage.getWidth()/3, otodecksImage.getHeight()/3,
+                0, 0, otodecksImage.getWidth(), otodecksImage.getHeight());
+}
+
+/**
+ * @brief Resizes and positions child components.
+ *
+ * This method calculates and sets the bounds for all child components (sliders and labels)
+ * based on the current size of the MixerView.
+ */
+void MixerView::resized()
+{
+    // Calculate relative dimensions based on the current component size.
+    float rowH = getHeight() / 8;
+    float width = getWidth() / 4;
+    
+    // Set bounds for the mixer slider and its label.
+    mixerSlider.setBounds(width, rowH * 7, width * 2, rowH);
+    mixerLabel.setBounds(mixerSlider.getX() + (mixerSlider.getWidth()/2) / 2 + 10,
+                         mixerSlider.getBottom() - 90,
+                         mixerSlider.getWidth(), 20);
+    
+    // Set bounds for the volume sliders and their labels.
+    volumeSliderA.setBounds(0, rowH * 1, getWidth() / 4, rowH * 5);
+    volumeSliderB.setBounds((getWidth()/4) * 3, rowH * 1, getWidth()/4, rowH * 5);
+    
+    volumeSliderALabel.setBounds(volumeSliderA.getX(), volumeSliderA.getY() - 20,
+                                 mixerSlider.getWidth(), 20);
+    volumeSliderBLabel.setBounds(volumeSliderB.getX(), volumeSliderB.getY() - 20,
+                                 mixerSlider.getWidth(), 20);
+    
+    // Set bounds for track A filter sliders and labels.
+    trackAHighPassSlider.setBounds((getWidth()/4) * 1, rowH * 1, (getWidth()/4), rowH);
+    trackAHighPassSliderLabel.setBounds(trackAHighPassSlider.getX() + 10,
+                                        trackAHighPassSlider.getY() + 90,
+                                        mixerSlider.getWidth(), 20);
+    
+    trackAMidPassSlider.setBounds((getWidth()/4) * 1, rowH * 2, (getWidth()/4), rowH);
+    trackAMidPassSliderLabel.setBounds(trackAMidPassSlider.getX() + 12,
+                                       trackAMidPassSlider.getY() + 90,
+                                       mixerSlider.getWidth(), 20);
+    
+    trackALowPassSlider.setBounds((getWidth()/4) * 1, rowH * 3, (getWidth()/4), rowH);
+    trackALowPassSliderLabel.setBounds(trackALowPassSlider.getX() + 12,
+                                       trackALowPassSlider.getY() + 90,
+                                       mixerSlider.getWidth(), 20);
+    
+    // Set bounds for track B filter sliders and labels.
+    trackBHighPassSlider.setBounds((getWidth()/4) * 2, rowH * 1, (getWidth()/4), rowH);
+    trackBHighPassSliderLabel.setBounds(trackBHighPassSlider.getX() + 10,
+                                        trackBHighPassSlider.getY() + 90,
+                                        mixerSlider.getWidth(), 20);
+    
+    trackBMidPassSlider.setBounds((getWidth()/4) * 2, rowH * 2, (getWidth()/4), rowH);
+    trackBMidPassSliderLabel.setBounds(trackBMidPassSlider.getX() + 12,
+                                       trackBMidPassSlider.getY() + 90,
+                                       mixerSlider.getWidth(), 20);
+    
+    trackBLowPassSlider.setBounds((getWidth()/4) * 2, rowH * 3, (getWidth()/4), rowH);
+    trackBLowPassSliderLabel.setBounds(trackBLowPassSlider.getX() + 12,
+                                       trackBLowPassSlider.getY() + 90,
+                                       mixerSlider.getWidth(), 20);
+}
+
+/**
+ * @brief Handles slider value changes.
+ *
+ * This callback is invoked when any of the registered sliders changes its value.
+ * It updates the corresponding parameters in the associated DJAudioPlayer objects.
+ *
+ * @param slider Pointer to the slider that triggered the event.
+ */
+void MixerView::sliderValueChanged(juce::Slider* slider)
+{
+    if (slider == &volumeSliderA) {
+        DBG("DeckGUI::sliderValueChanged : Gain slider value changed: " << volumeSliderA.getValue());
+        djAudioPlayer1->setGain(slider->getValue());
+    }
+    
+    if (slider == &volumeSliderB) {
+        DBG("DeckGUI::sliderValueChanged : Gain slider value changed: " << volumeSliderB.getValue());
+        djAudioPlayer2->setGain(slider->getValue());
+    }
+    
+    if (slider == &mixerSlider) {
+        // Cross-fade: Adjust the gains of both players based on the mixer slider value.
+        djAudioPlayer1->setGain(1.0f - slider->getValue());
+        djAudioPlayer2->setGain(slider->getValue());
+    }
+    
+    if (slider == &trackAHighPassSlider) {
+        djAudioPlayer1->setHighPassFilterAmount(slider->getValue());
+    }
+    
+    if (slider == &trackAMidPassSlider) {
+        djAudioPlayer1->setMidBandPassFilterAmount(slider->getValue());
+    }
+    
+    if (slider == &trackALowPassSlider) {
+        djAudioPlayer1->setLowPassFilterAmount(1.0f - slider->getValue());
+    }
+    
+    if (slider == &trackBHighPassSlider) {
+        djAudioPlayer2->setHighPassFilterAmount(slider->getValue());
+    }
+    
+    if (slider == &trackBMidPassSlider) {
+        djAudioPlayer2->setMidBandPassFilterAmount(slider->getValue());
+    }
+    
+    if (slider == &trackBLowPassSlider) {
+        djAudioPlayer2->setLowPassFilterAmount(1.0f - slider->getValue());
+    }
+}
+/**
+ * =================================================================
+ * @file Playlist.cpp
+ * @brief Implementation of the Playlist class for managing audio tracks.
+ *
+ * This class handles loading, displaying, and managing an audio playlist,
+ * including interactions with two decks.
+ *
+ * @author Jacques Thurling
+ * @date 4 Feb 2025
+ */
+
+#include <JuceHeader.h>
+#include "Playlist.h"
+
+/**
+ * @brief Constructs a Playlist object.
+ *
+ * Initializes the playlist with predefined tracks, configures the table UI,
+ * and registers basic audio formats.
+ *
+ * @param formatManager Reference to an AudioFormatManager.
+ * @param cache Reference to an AudioThumbnailCache.
+ * @param deck1 Reference to the first DeckGUI.
+ * @param deck2 Reference to the second DeckGUI.
+ * @param _states Pointer to a vector of DeckState objects.
+ */
+Playlist::Playlist(juce::AudioFormatManager& formatManager, juce::AudioThumbnailCache& cache, DeckGUI& deck1, DeckGUI& deck2, std::vector<DeckState> *_states) :
+audioThumbnail(cache), audioFormatManager(formatManager), deck1(deck1), deck2(deck2), states(_states)
+{
+    formatManager.registerBasicFormats();
+        
+        // Load predefined tracks into the playlist
+        std::vector<std::string> trackNames = {"Escape.mp3", "Cool.mp3", "Faster.mp3", "History.mp3", "Funk.mp3", "Louder.mp3", "Love.mp3"};
+        for (const auto& track : trackNames) {
+            juce::File file = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory().getChildFile("Resources/" + track);
+            playlistFiles.push_back({file, juce::URL(file)});
+        }
+        
+        tableComponent.updateContent();
+        repaint();
+        
+        // Configure table component UI
+        addAndMakeVisible(tableComponent);
+        tableComponent.getHeader().addColumn("Track Title", 1, 200);
+        tableComponent.getHeader().addColumn("Track Length", 2, 200);
+        tableComponent.getHeader().addColumn("Waveform", 3, 200);
+        tableComponent.getHeader().addColumn("Load Deck A", 4, 200);
+        tableComponent.getHeader().addColumn("Load Deck B", 5, 200);
+        tableComponent.setModel(this);
+}
+
+/**
+ * @brief Destructor for Playlist.
+ *
+ * Cleans up by detaching the table model.
+ */
+Playlist::~Playlist()
+{
+    tableComponent.setModel(nullptr);
+}
+
+/**
+ * @brief Paints the background of the Playlist component.
+ *
+ * @param g Graphics context.
+ */
+void Playlist::paint(juce::Graphics& g)
+{
+    g.fillAll(juce::Colours::grey);
+}
+
+/**
+ * @brief Resizes and arranges the table component.
+ */
+void Playlist::resized()
+{
+    tableComponent.setBounds(0, 0, getWidth(), getHeight());
+    for (int i = 1; i <= 5; ++i) {
+        tableComponent.getHeader().setColumnWidth(i, getWidth() / 5);
+    }
+    tableComponent.getHeader().setColour(juce::TableHeaderComponent::backgroundColourId, juce::Colours::white);
+}
+
+/**
+ * @brief Returns the number of rows in the playlist.
+ *
+ * @return Number of tracks in the playlist.
+ */
+int Playlist::getNumRows()
+{
+    return playlistFiles.size();
+}
+
+/**
+ * @brief Handles the background color of a row.
+ *
+ * @param g Graphics context.
+ * @param rowNumber Index of the row.
+ * @param width Row width.
+ * @param height Row height.
+ * @param rowIsSelected True if the row is selected.
+ */
+void Playlist::paintRowBackground(juce::Graphics& g, int rowNumber, int width, int height, bool rowIsSelected)
+{
+    g.fillAll(rowIsSelected ? juce::Colours::lightblue : (rowNumber % 2 == 0 ? juce::Colours::darkgrey : juce::Colours::grey));
+}
+
+/**
+ * @brief Paints a cell in the table.
+ *
+ * @param g Graphics context.
+ * @param rowNumber Row index.
+ * @param columnId Column index.
+ * @param width Cell width.
+ * @param height Cell height.
+ * @param rowIsSelected True if the row is selected.
+ */
+void Playlist::paintCell(juce::Graphics& g, int rowNumber, int columnId, int width, int height, bool rowIsSelected)
+{
+    g.setColour(juce::Colours::white);
+    if (columnId == 1) {
+        g.drawText(playlistFiles[rowNumber].fileUrl.getFileName(), 2, 0, width - 4, height, juce::Justification::centredLeft, true);
+    } else if (columnId == 2) {
+        if (auto* reader = audioFormatManager.createReaderFor(playlistFiles[rowNumber].file)) {
+            double lengthInSeconds = static_cast<double>(reader->lengthInSamples) / reader->sampleRate;
+            g.drawText(juce::String::formatted("%d:%02d", static_cast<int>(lengthInSeconds / 60), static_cast<int>(lengthInSeconds) % 60), 2, 0, width - 4, height, juce::Justification::centredLeft, true);
+            delete reader;
+        }
+    }
+}
+
+/**
+ * @brief Refreshes a table cell component.
+ *
+ * @param rowNumber Row index.
+ * @param columnId Column index.
+ * @param isRowSelected True if the row is selected.
+ * @param existingComponentToUpdate Pointer to the existing component.
+ * @return Updated component pointer.
+ */
+juce::Component* Playlist::refreshComponentForCell(int rowNumber, int columnId, bool isRowSelected, juce::Component* existingComponentToUpdate) {
+    if (columnId == 3) {
+        if (existingComponentToUpdate == nullptr) {
+            auto* waveform = new WaveformDisplay(audioFormatManager, audioThumbnail);
+            juce::URL fileUrl = playlistFiles[rowNumber].fileUrl;
+            waveform->loadUrl(fileUrl);
+            existingComponentToUpdate = waveform;
+        }
+    }
+    
+    if (columnId == 4) {
+        if (existingComponentToUpdate == nullptr) {
+            juce::TextButton* btn = new juce::TextButton("Load Deck A");
+            existingComponentToUpdate = btn;
+            juce::String id{std::to_string(rowNumber) + "-" + std::to_string(columnId)};
+            btn->setComponentID(id);
+            btn->addListener(this);
+        }
+    }
+    
+    if (columnId == 5) {
+        if (existingComponentToUpdate == nullptr) {
+            juce::TextButton* btn = new juce::TextButton("Load Deck B");
+            existingComponentToUpdate = btn;
+            juce::String id{std::to_string(rowNumber) + "-" + std::to_string(columnId)};
+            btn->setComponentID(id);
+            btn->addListener(this);
+        }
+    }
+    
+    return existingComponentToUpdate;
+}
+
+/**
+ * @brief Handles table cell clicks.
+ *
+ * @param rowNumber Row index.
+ * @param columnId Column index.
+ * @param event Mouse event details.
+ */
+void Playlist::cellClicked(int rowNumber, int columnId, const juce::MouseEvent& event) {
+    DBG(columnId);
+}
+
+/**
+ * @brief Handles button clicks for loading tracks into decks.
+ *
+ * @param button Pointer to the clicked button.
+ */
+void Playlist::buttonClicked(juce::Button* button)
+{
+    std::vector<std::string> temp = split(button->getComponentID().toStdString(), '-');
+    int rowIndex = std::stoi(temp[0]);
+    int columnIndex = std::stoi(temp[1]);
+    
+    if (columnIndex == 4) {
+        deck1.loadUrl(playlistFiles[rowIndex].fileUrl);
+    } else if (columnIndex == 5) {
+        deck2.loadUrl(playlistFiles[rowIndex].fileUrl);
+    }
+}
+
+/**
+ * @brief Determines if the playlist accepts dragged files.
+ *
+ * @param files List of dragged file paths.
+ * @return Always returns true.
+ */
+bool Playlist::isInterestedInFileDrag(const juce::StringArray& files) {
+    std::cout << "Playlist::isInterestedInFileDrag" << std::endl;
+    return true;
+}
+
+/**
+ * @brief Handles file drops for adding tracks to the playlist.
+ *
+ * @param files List of dropped file paths.
+ * @param x Drop position x-coordinate.
+ * @param y Drop position y-coordinate.
+ */
+void Playlist::filesDropped(const juce::StringArray& files, int x, int y)
+{
+    for (const auto& file : files) {
+        playlistFiles.push_back({juce::File(file), juce::URL(juce::File(file))});
+        tableComponent.updateContent();
+        repaint();
+        return;
+    }
+}
+
+/**
+ * @brief Splits a string by a delimiter.
+ *
+ * @param s Input string.
+ * @param delimiter Character used as the delimiter.
+ * @return Vector of split substrings.
+ */
+std::vector<std::string> Playlist::split(const std::string &s, char delimiter)
+{
+    std::vector<std::string> tokens;
+    std::istringstream stream(s);
+    std::string token;
+    while (std::getline(stream, token, delimiter)) {
+        tokens.push_back(token);
+    }
+    return tokens;
+}
+
+/**
+ * @brief Loads deck states from saved settings.
+ */
+void Playlist::setDeckStates() {
+    for (auto const &state : *states) {
+        if (state.deck_name == "deck_a") {
+            juce::File appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
+            juce::File file = appDir.getChildFile("Resources/" + state.file_name);
+            juce::URL fileUrl = juce::URL{file};
+            
+            deck1.loadUrl(fileUrl);
+        }
+        
+        if (state.deck_name == "deck_b") {
+            juce::File appDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
+            juce::File file = appDir.getChildFile("Resources/" + state.file_name);
+            juce::URL fileUrl = juce::URL{file};
+            
+            deck2.loadUrl(fileUrl);
+        }
+    }
+}
+/*
+ ==============================================================================
+ 
+ WaveformDisplay.cpp
+ Created: 30 Jan 2025 6:39:29pm
+ Author:  Jacques Thurling
+ 
+ ==============================================================================
+ */
+
+#include <JuceHeader.h>
+#include "WaveformDisplay.h"
+
+//==============================================================================
+/**
+ * @class WaveformDisplay
+ * @brief A component that displays an audio waveform using JUCE's AudioThumbnail.
+ */
+WaveformDisplay::WaveformDisplay(juce::AudioFormatManager& formatManagerToUse,
+                                 juce::AudioThumbnailCache& cache)
+    : audioThumbnail(1000, formatManagerToUse, cache), fileLoaded(false), position(0)
+{
+    /**
+     * @brief Constructor for WaveformDisplay.
+     * @param formatManagerToUse Reference to an AudioFormatManager for audio format handling.
+     * @param cache Reference to an AudioThumbnailCache for caching audio thumbnails.
+     */
+    audioThumbnail.addChangeListener(this);
+}
+
+/**
+ * @brief Destructor for WaveformDisplay.
+ */
+WaveformDisplay::~WaveformDisplay()
+{
+}
+
+/**
+ * @brief Renders the waveform display.
+ * @param g JUCE Graphics context.
+ */
+void WaveformDisplay::paint (juce::Graphics& g)
+{
+    g.fillAll (juce::Colour {30, 30, 30}); // Clear the background
+    g.setColour (juce::Colours::grey);
+    
+    if(fileLoaded)
+    {
+        audioThumbnail.drawChannel(g,
+                                   getLocalBounds(),
+                                   0,
+                                   audioThumbnail.getTotalLength(),
+                                   0,
+                                   1.0f);
+        
+        juce::Rectangle<int> customBounds (0, 0, position * getWidth(), getHeight());
+        g.setColour (juce::Colour {0, 183, 235});
+        audioThumbnail.drawChannel(g,
+                                   customBounds,
+                                   0,
+                                   audioThumbnail.getTotalLength() * position,
+                                   0,
+                                   1.0f);
+        g.setColour(juce::Colours::lightgreen);
+        g.drawRect(position * getWidth(), 0, 2, getHeight());
+    }
+    else
+    {
+        g.setFont (20.0f);
+        g.drawText ("File not loaded...", getLocalBounds(),
+                    juce::Justification::centred, true); // Draw placeholder text
+    }
+}
+
+/**
+ * @brief Called when the component is resized.
+ */
+void WaveformDisplay::resized()
+{
+    // Set the bounds of any child components if needed.
+}
+
+/**
+ * @brief Loads an audio file from a given URL.
+ * @param url The URL of the audio file.
+ */
+void WaveformDisplay::loadUrl(juce::URL url)
+{
+    audioThumbnail.clear();
+    fileLoaded = audioThumbnail.setSource(new juce::URLInputSource(url));
+}
+
+/**
+ * @brief Callback for change notifications from the AudioThumbnail.
+ * @param source The ChangeBroadcaster that triggered the change.
+ */
+void WaveformDisplay::changeListenerCallback (juce::ChangeBroadcaster *source)
+{
+    std::cout << "wfd: change received! " << std::endl;
+    repaint();
+}
+
+/**
+ * @brief Sets the playback position relative to the waveform length.
+ * @param pos The new position as a normalized value between 0 and 1.
+ */
+void WaveformDisplay::setPositionRelative(double pos)
+{
+    if (pos != position)
+    {
+        position = pos;
+        repaint();
+    }
+}
